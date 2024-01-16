@@ -67,23 +67,35 @@ def generator_rating():
 
 def lesson_bot(prompt, prompt_template, bot_name):
     try:
+        prompt_question = prompt['question']
+        prompt_text = prompt['text']
+
         if prompt:
             # st.write("I am inside", st.session_state.lesson_col_prompt)
             if "memory" not in st.session_state:
                 st.session_state.memory = ConversationBufferWindowMemory(k=5)
-            st.session_state.msg.append({"role": "user", "content": prompt})
+
+            st.session_state.msg.append({"role": "user", "content": "Question: " + prompt_question})
+            st.session_state.msg.append({"role": "user", "content": "Text: "+ prompt_text})
+
             message_placeholder = st.empty()
+
             # check if there is any knowledge base
             if st.session_state.vs:
-                docs = st.session_state.vs.similarity_search(prompt)
+                docs = st.session_state.vs.similarity_search(
+                    prompt_question+ " " +prompt_text
+                )
                 resources = docs[0].page_content
                 reference_prompt = f"""You may refer to this resources to improve or design the lesson
 										{resources}
 									"""
             else:
                 reference_prompt = ""
+            
             full_response = ""
-            for response in template_prompt(prompt, reference_prompt + prompt_template):
+            input_prompt = "question: "+prompt_question +", text: "+prompt_text
+            
+            for response in template_prompt(input_prompt, reference_prompt + prompt_template):
                 full_response += response.choices[0].delta.content or ""
                 message_placeholder.markdown(full_response + "▌")
             if bot_name == LESSON_COLLAB:
@@ -138,16 +150,6 @@ def template_prompt(prompt, prompt_template):
     )
     openai.api_key = return_api_key()
     os.environ["OPENAI_API_KEY"] = return_api_key()
-
-    # response = openai.ChatCompletion.create(
-    #     model=st.session_state.openai_model,
-    #     messages=[
-    #         {"role": "system", "content": prompt_template},
-    #         {"role": "user", "content": prompt},
-    #     ],
-    #     temperature=st.session_state.temp,  # settings option
-    #     stream=True,  # settings option
-    # )
 
     response = client.chat.completions.create(
         model=st.session_state.openai_model,
