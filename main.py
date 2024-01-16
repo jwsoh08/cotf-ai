@@ -282,7 +282,7 @@ def main():
         # PLEASE REMOVE ABOVE
         with st.sidebar:  # options for sidebar
             if st.session_state.login == False:
-                st.image("app_logo/primary_green.png")
+                st.image("app_logo/moe.png")
                 st.session_state.option = menu([MenuItem("Users login", icon="people")])
             else:
                 # can do a test if user is school is something show a different logo and set a different API key
