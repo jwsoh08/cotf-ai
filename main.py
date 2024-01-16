@@ -661,12 +661,17 @@ def main():
         elif st.session_state.option == "Metacognitive Feedback":
             st.subheader(f":green[{st.session_state.option}]")
             prompt = science_feedback()
-
+            
             if st.session_state.vs == False:
                 st.warning("Metacognitive Feedback is not linked to any knowledge base")
 
-            if prompt:
-                lesson_bot(prompt, st.session_state.metacognitive_feedback, METACOG)
+            if prompt is not None:
+                if prompt['text'] != "" and prompt['question'] != "":
+                    prompt_template = st.session_state.metacognitive_feedback
+                    lesson_bot(prompt, prompt_template, METACOG)
+                else:
+                    st.warning("You will need to enter both question and text.")
+                
 
         # Reflective Peer
         elif st.session_state.option == "Reflective Peer":
@@ -676,8 +681,12 @@ def main():
             if st.session_state.vs == False:
                 st.warning("Reflective Peer is not linked to any knowledge base")
 
-            if prompt:
-                lesson_bot(prompt, st.session_state.reflective_peer, REFLECTIVE)
+            if prompt is not None:
+                if prompt['text'] != "" and prompt['question'] != "":
+                    prompt_template = st.session_state.reflective_peer
+                    lesson_bot(prompt, prompt_template, REFLECTIVE)
+                else:
+                    st.warning("You will need to enter both question and text.")
 
         # Thinking Facilitator
         elif st.session_state.option == "Thinking Facilitator (Chatbot)":
