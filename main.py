@@ -660,17 +660,16 @@ def main():
         elif st.session_state.option == "Metacognitive Feedback":
             st.subheader(f":green[{st.session_state.option}]")
             prompt = science_feedback()
-            
+
             if st.session_state.vs == False:
                 st.warning("Metacognitive Feedback is not linked to any knowledge base")
 
             if prompt is not None:
-                if prompt['text'] != "" and prompt['question'] != "":
+                if prompt["text"] != "" and prompt["question"] != "":
                     prompt_template = st.session_state.metacognitive_feedback
                     lesson_bot(prompt, prompt_template, METACOG)
                 else:
                     st.warning("You will need to enter both question and text.")
-                
 
         # Reflective Peer
         elif st.session_state.option == "Reflective Peer":
@@ -681,7 +680,7 @@ def main():
                 st.warning("Reflective Peer is not linked to any knowledge base")
 
             if prompt is not None:
-                if prompt['text'] != "" and prompt['question'] != "":
+                if prompt["text"] != "" and prompt["question"] != "":
                     prompt_template = st.session_state.reflective_peer
                     lesson_bot(prompt, prompt_template, REFLECTIVE)
                 else:
@@ -697,63 +696,66 @@ def main():
             # Metacog settings
             with st.expander("Thinking Facilitator Settings"):
                 vectorstore_selection_interface(st.session_state.user["id"])
-                if st.session_state.vs:  # chatbot with knowledge base
-                    raw_search = sac.switch(
-                        label="Raw Search", value=False, align="start", position="left"
-                    )
+
+                if st.session_state.vs:
+                    vs_flag = False
+                else:
+                    vs_flag = True
+
+                options = sac.chip(
+                    items=[
+                        sac.ChipItem(
+                            label="Raw Search", icon="search", disabled=vs_flag
+                        ),
+                        sac.ChipItem(label="Enable Memory", icon="memory"),
+                        sac.ChipItem(label="Capture Responses", icon="camera-fill"),
+                        sac.ChipItem(label="Download Responses", icon="download"),
+                    ],
+                    index=[1, 2],
+                    format_func="title",
+                    radius="sm",
+                    size="sm",
+                    align="left",
+                    variant="light",
+                    multiple=True,
+                )
+
+                # Update state based on new chip selections
+                raw_search = "Raw Search" in options
+                st.session_state.memoryless = "Enable Memory" not in options
+                st.session_state.rating = "Rating Function" in options
+                st.session_state.download_response_flag = "Capture Responses" in options
+                preview_download_response = "Download Responses" in options
+               
                 clear = sac.switch(
                     label="Clear Chat", value=False, align="start", position="left"
                 )
+
                 if clear == True:
                     clear_session_states()
-                mem = sac.switch(
-                    label="Enable Memory", value=True, align="start", position="left"
-                )
-                if mem == True:
-                    st.session_state.memoryless = False
-                else:
-                    st.session_state.memoryless = True
-                rating = sac.switch(
-                    label="Rate Response", value=True, align="start", position="left"
-                )
-                if rating == True:
-                    st.session_state.rating = True
-                else:
-                    st.session_state.rating = False
-                vm = sac.switch(
-                    label="Visual Mapping",
-                    value=False,
-                    align="start",
-                    position="left",
-                    size="small",
-                )
-                if vm == True:
-                    st.session_state.visuals = True
-                else:
-                    st.session_state.visuals = False
+                if preview_download_response:
+                    complete_my_lesson()
 
-            if st.session_state.vs:  # chatbot with knowledge base
+            # chatbot with knowledge base
+            if st.session_state.vs:  
                 if raw_search == True:
                     search_bot()
                 else:
-                    if (
-                        st.session_state.memoryless
-                    ):  # memoryless chatbot with knowledge base but no memory
+                    if st.session_state.memoryless: 
+                        # memoryless chatbot with knowledge base but no memory 
                         basebot_qa(META_BOT)
                     else:
-                        basebot_qa_memory(
-                            META_BOT
-                        )  # chatbot with knowledge base and memory
-
-            else:  # chatbot with no knowledge base
-                if (
-                    st.session_state.memoryless
-                ):  # memoryless chatbot with no knowledge base and no memory
+                        # chatbot with knowledge base and memory
+                        basebot_qa_memory(META_BOT)  
+                        
+            # chatbot with no knowledge base
+            else:  
+                # memoryless chatbot with no knowledge base and no memory
+                if st.session_state.memoryless:
                     basebot(META_BOT)
                 else:
-                    basebot_memory(
-                        META_BOT
-                    )  # chatbot with no knowledge base but with memory
+                    # chatbot with no knowledge base but with memory
+                    basebot_memory(META_BOT)  
 
         elif st.session_state.option == "AI Chatbot":
             # Code for AI Chatbot - ZeroCode
