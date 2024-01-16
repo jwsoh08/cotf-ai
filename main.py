@@ -3,6 +3,8 @@ import nltk
 import streamlit as st
 from streamlit_antd_components import menu, MenuItem
 import streamlit_antd_components as sac
+from metacog.metacog import science_feedback, reflective_peer
+from lcc.lesson_plan import lesson_bot
 from basecode.main_bot import (
     basebot_memory,
     basebot_qa_memory,
@@ -355,6 +357,34 @@ def main():
                             ],
                         ),
                         sac.MenuItem(
+                            "Learning Tools",
+                            icon="tools",
+                            children=[
+                                sac.MenuItem(
+                                    return_function_name("Metacognitive Feedback"),
+                                    icon="bug-fill",
+                                    disabled=is_function_disabled(
+                                        "Metacognitive Feedback"
+                                    ),
+                                ),
+                                sac.MenuItem(
+                                    return_function_name("Reflective Peer"),
+                                    icon="people",
+                                    disabled=is_function_disabled("Reflective Peer"),
+                                ),
+                                sac.MenuItem(
+                                    return_function_name(
+                                        "Thinking Facilitator",
+                                        "Thinking Facilitator (Chatbot)",
+                                    ),
+                                    icon="chat-dots",
+                                    disabled=is_function_disabled(
+                                        "Thinking Facilitator"
+                                    ),
+                                ),
+                            ],
+                        ),
+                        sac.MenuItem(
                             "Types of ChatBots",
                             icon="person-fill-gear",
                             children=[
@@ -626,6 +656,96 @@ def main():
         elif st.session_state.option == "Lesson Designer Map":
             st.subheader(f":green[{st.session_state.option}]")
             lesson_map_generator()
+
+        # Metacog Feedback
+        elif st.session_state.option == "Metacognitive Feedback":
+            st.subheader(f":green[{st.session_state.option}]")
+            prompt = science_feedback()
+
+            if st.session_state.vs == False:
+                st.warning("Metacognitive Feedback is not linked to any knowledge base")
+
+            if prompt:
+                lesson_bot(prompt, st.session_state.metacognitive_feedback, METACOG)
+
+        # Reflective Peer
+        elif st.session_state.option == "Reflective Peer":
+            st.subheader(f":green[{st.session_state.option}]")
+            prompt = reflective_peer()
+
+            if st.session_state.vs == False:
+                st.warning("Reflective Peer is not linked to any knowledge base")
+
+            if prompt:
+                lesson_bot(prompt, st.session_state.reflective_peer, REFLECTIVE)
+
+        # Thinking Facilitator
+        elif st.session_state.option == "Thinking Facilitator (Chatbot)":
+            st.subheader(f":green[{st.session_state.option}]")
+
+            # Jun Wen: Options (Conversation, Default and Paragraph) were asked to
+            # be removed by Joe.
+
+            # Metacog settings
+            with st.expander("Thinking Facilitator Settings"):
+                vectorstore_selection_interface(st.session_state.user["id"])
+                if st.session_state.vs:  # chatbot with knowledge base
+                    raw_search = sac.switch(
+                        label="Raw Search", value=False, align="start", position="left"
+                    )
+                clear = sac.switch(
+                    label="Clear Chat", value=False, align="start", position="left"
+                )
+                if clear == True:
+                    clear_session_states()
+                mem = sac.switch(
+                    label="Enable Memory", value=True, align="start", position="left"
+                )
+                if mem == True:
+                    st.session_state.memoryless = False
+                else:
+                    st.session_state.memoryless = True
+                rating = sac.switch(
+                    label="Rate Response", value=True, align="start", position="left"
+                )
+                if rating == True:
+                    st.session_state.rating = True
+                else:
+                    st.session_state.rating = False
+                vm = sac.switch(
+                    label="Visual Mapping",
+                    value=False,
+                    align="start",
+                    position="left",
+                    size="small",
+                )
+                if vm == True:
+                    st.session_state.visuals = True
+                else:
+                    st.session_state.visuals = False
+
+            if st.session_state.vs:  # chatbot with knowledge base
+                if raw_search == True:
+                    search_bot()
+                else:
+                    if (
+                        st.session_state.memoryless
+                    ):  # memoryless chatbot with knowledge base but no memory
+                        basebot_qa(META_BOT)
+                    else:
+                        basebot_qa_memory(
+                            META_BOT
+                        )  # chatbot with knowledge base and memory
+
+            else:  # chatbot with no knowledge base
+                if (
+                    st.session_state.memoryless
+                ):  # memoryless chatbot with no knowledge base and no memory
+                    basebot(META_BOT)
+                else:
+                    basebot_memory(
+                        META_BOT
+                    )  # chatbot with no knowledge base but with memory
 
         elif st.session_state.option == "AI Chatbot":
             # Code for AI Chatbot - ZeroCode
