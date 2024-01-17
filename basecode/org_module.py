@@ -318,7 +318,7 @@ def remove_or_reassign_teacher_ui(school_id):
 				return
 				# Handle the case where there's no matching teacher, maybe return or raise a custom exception
 			else:
-				teacher_id = cursor.fetchone()[0]
+				teacher_id = teacher_record[0]
 
 			if remove_assignment:
 				# Remove teacher from all currently assigned classes
