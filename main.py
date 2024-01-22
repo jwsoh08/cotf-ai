@@ -176,7 +176,7 @@ def initialize_session_state(menu_funcs, default_value):
 
 
 def get_secret():
-    secret_name = "cotf/streamlit/test"
+    secret_name = "prod/st-app/test"
     region_name = "ap-southeast-1"
 
     # Create a Secrets Manager client
