@@ -122,7 +122,7 @@ pillow==10.2.0
 plantuml==0.3.0
 portalocker==2.7.0
 prompt-toolkit==3.0.39
-protobuf==4.24.3
+protobuf==4.23.4
 ptyprocess==0.7.0
 pure-eval==0.2.2
 py==1.11.0
