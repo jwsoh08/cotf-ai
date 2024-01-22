@@ -1,5 +1,6 @@
 import streamlit as st
 import hashlib
+
 # from st_files_connection import FilesConnection
 import sqlite3
 import os
@@ -8,10 +9,13 @@ import os
 import ast
 
 
+from ..services.aws import SecretsManager
+
+
 class ConfigHandler:
     def __init__(self):
         self.config = configparser.ConfigParser()
-        self.config.read('config.ini')
+        self.config.read("config.ini")
 
     def get_value(self, section, key):
         value = self.config.get(section, key)
@@ -25,9 +29,9 @@ class ConfigHandler:
 
 # Initialization
 config_handler = ConfigHandler()
-COTF = config_handler.get_value('constants', 'COTF')
-META = config_handler.get_value('constants', 'META')
-PANDAI = config_handler.get_value('constants', 'PANDAI')
+COTF = config_handler.get_value("constants", "COTF")
+META = config_handler.get_value("constants", "META")
+PANDAI = config_handler.get_value("constants", "PANDAI")
 
 # Create or check for the 'database' directory in the current working directory
 cwd = os.getcwd()
@@ -36,11 +40,12 @@ WORKING_DIRECTORY = os.path.join(cwd, "database")
 if not os.path.exists(WORKING_DIRECTORY):
     os.makedirs(WORKING_DIRECTORY)
 
-if st.secrets["sql_ext_path"] == "None":
+if SecretsManager.get_secret("sql_ext_path") == "None":
     WORKING_DATABASE = os.path.join(
-        WORKING_DIRECTORY, st.secrets["default_db"])
+        WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
+    )
 else:
-    WORKING_DATABASE = st.secrets["sql_ext_path"]
+    WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 
 
 def login_function():
@@ -56,6 +61,8 @@ def login_function():
                 st.error("Username and Password is incorrect")
                 return False
     pass
+
+
 # can consider bycrypt if need to upgrade higher security
 
 
@@ -72,8 +79,7 @@ def check_password(username, password):
     cursor = conn.cursor()
 
     # Fetch only the password for the given username
-    cursor.execute(
-        'SELECT password FROM Users WHERE username = ?', (username,))
+    cursor.execute("SELECT password FROM Users WHERE username = ?", (username,))
     result = cursor.fetchone()
     conn.close()
 
@@ -85,4 +91,4 @@ def check_password(username, password):
 
 
 def return_api_key():
-    return st.secrets["openai_key"]
+    return SecretsManager.get_secret("openai_key")
