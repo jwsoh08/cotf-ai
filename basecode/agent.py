@@ -17,7 +17,7 @@ from langchain.utilities import WikipediaAPIWrapper
 from langchain.agents import tool
 import json
 
-from ..services.aws import SecretsManager
+from .services.aws import SecretsManager
 
 
 # smart agents accessing the internet for free

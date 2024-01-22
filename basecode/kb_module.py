@@ -15,7 +15,7 @@ import configparser
 import ast
 import json
 
-from ..services.aws import SecretsManager
+from .services.aws import SecretsManager
 
 
 class ConfigHandler:

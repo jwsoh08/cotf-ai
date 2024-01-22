@@ -8,7 +8,7 @@ import tempfile
 import configparser
 import ast
 
-from ..services.aws import SecretsManager
+from .services.aws import SecretsManager
 
 
 class ConfigHandler:

@@ -4,7 +4,7 @@ import re
 import openai
 from openai import OpenAI
 
-from services.aws import SecretsManager
+from ..basecode.services.aws import SecretsManager
 
 
 def mermaid(code: str) -> None:

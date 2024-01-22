@@ -6,7 +6,7 @@ import os
 import zipfile
 import boto3
 
-from ..services.aws import SecretsManager
+from .services.aws import SecretsManager
 
 if "S3_BUCKET" in st.secrets:
     S3_BUCKET = SecretsManager.get_secret("S3_BUCKET")

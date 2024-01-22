@@ -4,7 +4,7 @@ import os
 import sqlite3
 import ast
 
-from ..services.aws import SecretsManager
+from .services.aws import SecretsManager
 
 
 class ConfigHandler:

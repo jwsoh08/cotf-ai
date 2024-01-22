@@ -12,7 +12,7 @@ import configparser
 import os
 from Markdown2docx import Markdown2docx
 
-from ..services.aws import SecretsManager
+from .services.aws import SecretsManager
 
 client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
