@@ -176,7 +176,7 @@ def initialize_session_state(menu_funcs, default_value):
 
 
 def get_secret():
-    secret_name = "prod/st-app/test"
+    secret_name = "cotf/streamlit/test"
     region_name = "ap-southeast-1"
 
     # Create a Secrets Manager client
@@ -190,6 +190,7 @@ def get_secret():
         raise e
 
     secret = get_secret_value_response["SecretString"]
+    return secret
 
 
 def main():
