@@ -87,7 +87,7 @@ from PIL import Image
 import configparser
 import ast
 
-from services.aws import SecretsManager
+from basecode.services.aws import SecretsManager
 
 
 def download_nltk_data_if_absent(package_name):
