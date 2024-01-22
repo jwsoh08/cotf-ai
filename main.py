@@ -3,155 +3,156 @@ import boto3
 from botocore.exceptions import ClientError
 
 # No need SQLite
-import nltk
+# import nltk
 import streamlit as st
-from streamlit_antd_components import menu, MenuItem
-import streamlit_antd_components as sac
-from metacog.metacog import science_feedback, reflective_peer
-from lcc.lesson_plan import lesson_bot
-from basecode.main_bot import (
-    basebot_memory,
-    basebot_qa_memory,
-    clear_session_states,
-    search_bot,
-    basebot,
-    basebot_qa,
-    complete_my_lesson,
-)
-from basecode.files_module import display_files, docs_uploader, delete_files
-from basecode.kb_module import (
-    display_vectorstores,
-    create_vectorstore,
-    delete_vectorstores,
-)
-from basecode.authenticate import login_function, check_password
-from basecode.class_dash import download_data_table_csv
 
-# New schema move function fom settings
-from basecode.database_schema import create_dbs
-from basecode.agent import (
-    agent_management,
-    agent_bot,
-    wiki_search,
-    DuckDuckGoSearchRun,
-    YouTubeSearchTool,
-)
+# from streamlit_antd_components import menu, MenuItem
+# import streamlit_antd_components as sac
+# from metacog.metacog import science_feedback, reflective_peer
+# from lcc.lesson_plan import lesson_bot
+# from basecode.main_bot import (
+#     basebot_memory,
+#     basebot_qa_memory,
+#     clear_session_states,
+#     search_bot,
+#     basebot,
+#     basebot_qa,
+#     complete_my_lesson,
+# )
+# from basecode.files_module import display_files, docs_uploader, delete_files
+# from basecode.kb_module import (
+#     display_vectorstores,
+#     create_vectorstore,
+#     delete_vectorstores,
+# )
+# from basecode.authenticate import login_function, check_password
+# from basecode.class_dash import download_data_table_csv
 
-from basecode.database_module import (
-    manage_tables,
-    delete_tables,
-    download_database,
-    upload_database,
-    upload_s3_database,
-    download_from_s3_and_unzip,
-    check_aws_secrets_exist,
-    backup_s3_database,
-    db_was_modified,
-)
-from basecode.org_module import (
-    has_at_least_two_rows,
-    initialise_admin_account,
-    load_user_profile,
-    display_accounts,
-    create_org_structure,
-    check_multiple_schools,
-    process_user_profile,
-    remove_or_reassign_teacher_ui,
-    reassign_student_ui,
-    change_teacher_profile_ui,
-    add_user,
-    streamlit_delete_interface,
-    add_class,
-    add_level,
-)
+# # New schema move function fom settings
+# from basecode.database_schema import create_dbs
+# from basecode.agent import (
+#     agent_management,
+#     agent_bot,
+#     wiki_search,
+#     DuckDuckGoSearchRun,
+#     YouTubeSearchTool,
+# )
 
-from basecode.pwd_module import reset_passwords, password_settings
-from basecode.users_module import (
-    link_users_to_app_function_ui,
-    set_function_access_for_user,
-    create_prompt_template,
-    update_prompt_template,
-    vectorstore_selection_interface,
-    pre_load_variables,
-    load_and_fetch_vectorstore_for_user,
-    link_profiles_to_vectorstore_interface,
-)
+# from basecode.database_module import (
+#     manage_tables,
+#     delete_tables,
+#     download_database,
+#     upload_database,
+#     upload_s3_database,
+#     download_from_s3_and_unzip,
+#     check_aws_secrets_exist,
+#     backup_s3_database,
+#     db_was_modified,
+# )
+# from basecode.org_module import (
+#     has_at_least_two_rows,
+#     initialise_admin_account,
+#     load_user_profile,
+#     display_accounts,
+#     create_org_structure,
+#     check_multiple_schools,
+#     process_user_profile,
+#     remove_or_reassign_teacher_ui,
+#     reassign_student_ui,
+#     change_teacher_profile_ui,
+#     add_user,
+#     streamlit_delete_interface,
+#     add_class,
+#     add_level,
+# )
 
-from basecode.bot_settings import bot_settings_interface, load_bot_settings
-from lcc.lesson_plan import (
-    lesson_collaborator,
-    lesson_bot,
-    lesson_design_options,
-    lesson_commentator,
-    lesson_map_generator,
-)
+# from basecode.pwd_module import reset_passwords, password_settings
+# from basecode.users_module import (
+#     link_users_to_app_function_ui,
+#     set_function_access_for_user,
+#     create_prompt_template,
+#     update_prompt_template,
+#     vectorstore_selection_interface,
+#     pre_load_variables,
+#     load_and_fetch_vectorstore_for_user,
+#     link_profiles_to_vectorstore_interface,
+# )
 
-from PIL import Image
-import configparser
-import ast
+# from basecode.bot_settings import bot_settings_interface, load_bot_settings
+# from lcc.lesson_plan import (
+#     lesson_collaborator,
+#     lesson_bot,
+#     lesson_design_options,
+#     lesson_commentator,
+#     lesson_map_generator,
+# )
 
-
-def download_nltk_data_if_absent(package_name):
-    try:
-        # Try loading the package to see if it exists
-        nltk.data.find("tokenizers/" + package_name)
-    except LookupError:
-        # If the package doesn't exist, download it
-        nltk.download(package_name)
+# from PIL import Image
+# import configparser
+# import ast
 
 
-download_nltk_data_if_absent("punkt")
+# def download_nltk_data_if_absent(package_name):
+#     try:
+#         # Try loading the package to see if it exists
+#         nltk.data.find("tokenizers/" + package_name)
+#     except LookupError:
+#         # If the package doesn't exist, download it
+#         nltk.download(package_name)
 
 
-class ConfigHandler:
-    def __init__(self):
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
-
-    def get_value(self, section, key):
-        value = self.config.get(section, key)
-        try:
-            # Convert string value to a Python data structure
-            return ast.literal_eval(value)
-        except (SyntaxError, ValueError):
-            # If not a data structure, return the plain string
-            return value
+# download_nltk_data_if_absent("punkt")
 
 
-# Initialization
-config_handler = ConfigHandler()
+# class ConfigHandler:
+#     def __init__(self):
+#         self.config = configparser.ConfigParser()
+#         self.config.read("config.ini")
+
+#     def get_value(self, section, key):
+#         value = self.config.get(section, key)
+#         try:
+#             # Convert string value to a Python data structure
+#             return ast.literal_eval(value)
+#         except (SyntaxError, ValueError):
+#             # If not a data structure, return the plain string
+#             return value
+
+
+# # Initialization
+# config_handler = ConfigHandler()
 
 # Setting Streamlit configurations
 st.set_page_config(layout="wide")
 
 # Fetching secrets from Streamlit
-DEFAULT_TITLE = st.secrets["default_title"]
-SUPER_PWD = st.secrets["super_admin_password"]
-SUPER = st.secrets["super_admin"]
-DEFAULT_DB = st.secrets["default_db"]
+# DEFAULT_TITLE = st.secrets["default_title"]
+# SUPER_PWD = st.secrets["super_admin_password"]
+# SUPER = st.secrets["super_admin"]
+# DEFAULT_DB = st.secrets["default_db"]
 
 # Fetching values from config.ini
-DEFAULT_TEXT = config_handler.get_value("constants", "DEFAULT_TEXT")
-TCH = config_handler.get_value("constants", "TCH")
-STU = config_handler.get_value("constants", "STU")
-SA = config_handler.get_value("constants", "SA")
-AD = config_handler.get_value("constants", "AD")
-COTF = config_handler.get_value("constants", "COTF")
-META = config_handler.get_value("constants", "META")
-PANDAI = config_handler.get_value("constants", "PANDAI")
-MENU_FUNCS = config_handler.get_value("menu_lists", "MENU_FUNCS")
-META_BOT = config_handler.get_value("constants", "META_BOT")
-QA_BOT = config_handler.get_value("constants", "QA_BOT")
-LESSON_BOT = config_handler.get_value("constants", "LESSON_BOT")
-LESSON_COLLAB = config_handler.get_value("constants", "LESSON_COLLAB")
-LESSON_COMMENT = config_handler.get_value("constants", "LESSON_COMMENT")
-LESSON_MAP = config_handler.get_value("constants", "LESSON_MAP")
-REFLECTIVE = config_handler.get_value("constants", "REFLECTIVE")
-CONVERSATION = config_handler.get_value("constants", "CONVERSATION")
-MINDMAP = config_handler.get_value("constants", "MINDMAP")
-METACOG = config_handler.get_value("constants", "METACOG")
-ACK = config_handler.get_value("application_agreement", "ACK")
-PROTOTYPE = config_handler.get_value("constants", "PROTOTYPE")
+# DEFAULT_TEXT = config_handler.get_value("constants", "DEFAULT_TEXT")
+# TCH = config_handler.get_value("constants", "TCH")
+# STU = config_handler.get_value("constants", "STU")
+# SA = config_handler.get_value("constants", "SA")
+# AD = config_handler.get_value("constants", "AD")
+# COTF = config_handler.get_value("constants", "COTF")
+# META = config_handler.get_value("constants", "META")
+# PANDAI = config_handler.get_value("constants", "PANDAI")
+# MENU_FUNCS = config_handler.get_value("menu_lists", "MENU_FUNCS")
+# META_BOT = config_handler.get_value("constants", "META_BOT")
+# QA_BOT = config_handler.get_value("constants", "QA_BOT")
+# LESSON_BOT = config_handler.get_value("constants", "LESSON_BOT")
+# LESSON_COLLAB = config_handler.get_value("constants", "LESSON_COLLAB")
+# LESSON_COMMENT = config_handler.get_value("constants", "LESSON_COMMENT")
+# LESSON_MAP = config_handler.get_value("constants", "LESSON_MAP")
+# REFLECTIVE = config_handler.get_value("constants", "REFLECTIVE")
+# CONVERSATION = config_handler.get_value("constants", "CONVERSATION")
+# MINDMAP = config_handler.get_value("constants", "MINDMAP")
+# METACOG = config_handler.get_value("constants", "METACOG")
+# ACK = config_handler.get_value("application_agreement", "ACK")
+# PROTOTYPE = config_handler.get_value("constants", "PROTOTYPE")
 
 
 def is_function_disabled(function_name):
