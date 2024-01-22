@@ -8,10 +8,11 @@ import boto3
 
 from .services.aws import SecretsManager
 
-if "S3_BUCKET" in st.secrets:
-    S3_BUCKET = SecretsManager.get_secret("S3_BUCKET")
-else:
-    S3_BUCKET = "Default"
+# if "S3_BUCKET" in st.secrets:
+#     S3_BUCKET = SecretsManager.get_secret("S3_BUCKET")
+# else:
+
+S3_BUCKET = "Default"
 
 # Create or check for the 'database' directory in the current working directory
 cwd = os.getcwd()
