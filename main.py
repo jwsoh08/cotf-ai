@@ -179,7 +179,7 @@ def main():
             st.session_state.title_page = DEFAULT_TITLE
 
         st.title(st.session_state.title_page)
-        sac.divider(label="String", icon="house", align="center")
+        sac.divider(label="Classroom of the Future", icon="house", align="center")
 
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
