@@ -209,23 +209,25 @@ def main():
             st.session_state.lesson_plan = ""
 
         if "temp" not in st.session_state:
-            st.session_state.temp = SecretsManager.get_secret("default_temp")
+            st.session_state.temp = int(SecretsManager.get_secret("default_temp"))
 
         if "acknowledgement" not in st.session_state:
             st.session_state.acknowledgement = False
 
         if "frequency_penalty" not in st.session_state:
-            st.session_state.frequency_penalty = SecretsManager.get_secret(
-                "default_frequency_penalty"
+            st.session_state.frequency_penalty = int(
+                SecretsManager.get_secret("default_frequency_penalty")
             )
 
         if "presence_penalty" not in st.session_state:
-            st.session_state.presence_penalty = SecretsManager.get_secret(
-                "default_presence_penalty"
+            st.session_state.presence_penalty = int(
+                SecretsManager.get_secret("default_presence_penalty")
             )
 
         if "k_memory" not in st.session_state:
-            st.session_state.k_memory = SecretsManager.get_secret("default_k_memory")
+            st.session_state.k_memory = int(
+                SecretsManager.get_secret("default_k_memory")
+            )
 
         if "memoryless" not in st.session_state:
             st.session_state.memoryless = False
