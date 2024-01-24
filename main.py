@@ -173,13 +173,27 @@ def initialize_session_state(menu_funcs, default_value):
     st.session_state.func_options = {key: default_value for key in menu_funcs.keys()}
 
 
+def render_main_header():
+    if (
+        st.session_state.option == "Lesson Collaborator (Chatbot)"
+        or st.session_state.option == "Lesson Collaborator (Scaffolded)"
+        or st.session_state.option == "Lesson Commentator"
+        or st.session_state.option == "Lesson Designer Map"
+    ):
+        st.title("Lesson Collaborator & Commentator")
+    elif (
+        st.session_state.option == "Metacognitive Feedback"
+        or st.session_state.option == "Reflective Peer"
+        or st.session_state.option == "Thinking Facilitator (Chatbot)"
+    ):
+        st.title("Metacog")
+    else:
+        st.title(st.session_state.title_page)
+
 def main():
     try:
         if "title_page" not in st.session_state:
             st.session_state.title_page = DEFAULT_TITLE
-
-        st.title(st.session_state.title_page)
-        sac.divider(label="Classroom of the Future", icon="house", align="center")
 
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
@@ -467,6 +481,9 @@ def main():
                     format_func="title",
                     open_all=True,
                 )
+
+        render_main_header()
+        sac.divider(label="Classroom of the Future", icon="house", align="center")
 
         if st.session_state.option == "Users login":
             col1, col2 = st.columns([3, 4])
