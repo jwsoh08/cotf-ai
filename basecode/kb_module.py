@@ -54,7 +54,7 @@ if SecretsManager.get_secret("sql_ext_path") == "None":
 else:
     WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 
-os.environ["OPENAI_API_KEY"] = return_api_key()
+# os.environ["OPENAI_API_KEY"] = return_api_key()
 lancedb_path = os.path.join(WORKING_DIRECTORY, "lancedb")
 db = lancedb.connect(lancedb_path)
 
