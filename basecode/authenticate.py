@@ -91,4 +91,18 @@ def check_password(username, password):
 
 
 def return_api_key():
-    return SecretsManager.get_secret("openai_key")
+    if (
+        st.session_state.option == "Lesson Collaborator (Chatbot)"
+        or st.session_state.option == "Lesson Collaborator (Scaffolded)"
+        or st.session_state.option == "Lesson Commentator"
+        or st.session_state.option == "Lesson Designer Map"
+    ):
+        return SecretsManager.get_secret("openai_key_lcc")
+    elif (
+        st.session_state.option == "Metacognitive Feedback"
+        or st.session_state.option == "Reflective Peer"
+        or st.session_state.option == "Thinking Facilitator (Chatbot)"
+    ):
+        return SecretsManager.get_secret("openai_key_metacog")
+    else:
+        return SecretsManager.get_secret("openai_key_lcc")
