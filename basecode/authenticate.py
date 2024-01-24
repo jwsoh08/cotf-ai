@@ -91,6 +91,10 @@ def check_password(username, password):
 
 
 def return_api_key():
+    # initial value of API KEY
+    if "option" not in st.session_state:
+        return SecretsManager.get_secret("openai_key_lcc")
+
     if (
         st.session_state.option == "Lesson Collaborator (Chatbot)"
         or st.session_state.option == "Lesson Collaborator (Scaffolded)"
