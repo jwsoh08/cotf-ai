@@ -105,18 +105,18 @@ def lesson_bot(prompt, prompt_template, bot_name):
             message_placeholder.markdown(full_response)
             st.session_state.msg.append({"role": "assistant", "content": full_response})
             st.session_state["memory"].save_context(
-                {"input": prompt}, {"output": full_response}
+                {"input": input_prompt}, {"output": full_response}
             )
             # This is to send the lesson_plan to the lesson design map
             st.session_state.lesson_plan = full_response
             # Insert data into the table
             now = datetime.now()  # Using ISO format for date
-            num_tokens = len(full_response + prompt) * 1.3
+            num_tokens = len(full_response + prompt_question + prompt_text) * 1.3
             # st.write(num_tokens)
             insert_into_data_table(
                 now.strftime("%d/%m/%Y %H:%M:%S"),
                 full_response,
-                prompt,
+                input_prompt,
                 num_tokens,
                 bot_name,
                 feedback_value,
