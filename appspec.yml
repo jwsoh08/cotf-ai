@@ -1,0 +1,9 @@
+version: 0.1
+os: linux
+files:
+  - source: /
+    destination: /var/www/my_streamlit_app
+hooks:
+  AfterInstall:
+    - location: start_streamlit.sh
+      runas: ubuntu
