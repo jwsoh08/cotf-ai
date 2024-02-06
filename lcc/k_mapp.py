@@ -79,7 +79,7 @@ def output_mermaid_diagram(mermaid_code):
 
 def generate_mindmap(prompt):
     try:
-        client = OpenAI(api_key=SecretsManager.get_secret("openai_key"))
+        client = OpenAI(api_key=st.secrets["openai_key"])
 
         response = client.chat.completions.create(
             model=st.session_state.openai_model,

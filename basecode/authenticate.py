@@ -40,12 +40,10 @@ WORKING_DIRECTORY = os.path.join(cwd, "database")
 if not os.path.exists(WORKING_DIRECTORY):
     os.makedirs(WORKING_DIRECTORY)
 
-if SecretsManager.get_secret("sql_ext_path") == "None":
-    WORKING_DATABASE = os.path.join(
-        WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
-    )
+if st.secrets["sql_ext_path"] == "None":
+    WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
 else:
-    WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
+    WORKING_DATABASE = st.secrets["sql_ext_path"]
 
 
 def login_function():
@@ -93,7 +91,7 @@ def check_password(username, password):
 def return_api_key():
     # initial value of API KEY
     if "option" not in st.session_state:
-        return SecretsManager.get_secret("openai_key_lcc")
+        return st.secrets["openai_key_lcc"]
 
     if (
         st.session_state.option == "Lesson Collaborator (Chatbot)"
@@ -101,12 +99,12 @@ def return_api_key():
         or st.session_state.option == "Lesson Commentator"
         or st.session_state.option == "Lesson Designer Map"
     ):
-        return SecretsManager.get_secret("openai_key_lcc")
+        return st.secrets["openai_key_lcc"]
     elif (
         st.session_state.option == "Metacognitive Feedback"
         or st.session_state.option == "Reflective Peer"
         or st.session_state.option == "Thinking Facilitator (Chatbot)"
     ):
-        return SecretsManager.get_secret("openai_key_metacog")
+        return st.secrets["openai_key_metacog"]
     else:
-        return SecretsManager.get_secret("openai_key_lcc")
+        return st.secrets["openai_key_lcc"]

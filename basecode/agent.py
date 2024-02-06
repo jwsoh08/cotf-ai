@@ -85,7 +85,7 @@ def agent_bot():
         st.chat_message("user").write(prompt)
 
         llm = ChatOpenAI(
-            model_name=SecretsManager.get_secret("default_model"),
+            model_name=st.secrets["default_model"],
             openai_api_key=return_api_key(),
             streaming=True,
         )

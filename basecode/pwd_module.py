@@ -11,7 +11,7 @@ from .services.aws import SecretsManager
 config = configparser.ConfigParser()
 config.read("config.ini")
 DEFAULT_TEXT = config["constants"]["DEFAULT_TEXT"]
-DEFAULT_PASSWORD = SecretsManager.get_secret("default_password")
+DEFAULT_PASSWORD = st.secrets["default_password"]
 
 # Create or check for the 'database' directory in the current working directory
 cwd = os.getcwd()
@@ -20,12 +20,10 @@ WORKING_DIRECTORY = os.path.join(cwd, "database")
 if not os.path.exists(WORKING_DIRECTORY):
     os.makedirs(WORKING_DIRECTORY)
 
-if SecretsManager.get_secret("sql_ext_path") == "None":
-    WORKING_DATABASE = os.path.join(
-        WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
-    )
+if st.secrets["sql_ext_path"] == "None":
+    WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
 else:
-    WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
+    WORKING_DATABASE = st.secrets["sql_ext_path"]
 
 
 def change_password(username, new_password):

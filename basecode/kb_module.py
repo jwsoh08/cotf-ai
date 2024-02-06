@@ -47,12 +47,10 @@ WORKING_DIRECTORY = os.path.join(cwd, "database")
 if not os.path.exists(WORKING_DIRECTORY):
     os.makedirs(WORKING_DIRECTORY)
 
-if SecretsManager.get_secret("sql_ext_path") == "None":
-    WORKING_DATABASE = os.path.join(
-        WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
-    )
+if st.secrets["sql_ext_path"] == "None":
+    WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
 else:
-    WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
+    WORKING_DATABASE = st.secrets["sql_ext_path"]
 
 # os.environ["OPENAI_API_KEY"] = return_api_key()
 lancedb_path = os.path.join(WORKING_DIRECTORY, "lancedb")
