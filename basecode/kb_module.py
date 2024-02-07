@@ -3,7 +3,7 @@ import sqlite3
 import streamlit_antd_components as sac
 import pandas as pd
 import os
-import openai
+# import openai
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.text_splitter import CharacterTextSplitter
@@ -15,9 +15,7 @@ import configparser
 import ast
 import json
 
-from .services.aws import SecretsManager
-
-
+from openai import OpenAI
 class ConfigHandler:
     def __init__(self):
         self.config = configparser.ConfigParser()
@@ -276,11 +274,25 @@ def create_lancedb_table(embeddings, meta, table_name):
     lancedb_path = os.path.join(WORKING_DIRECTORY, "lancedb")
     # LanceDB connection
     db = lancedb.connect(lancedb_path)
+
+    client = OpenAI()
+    response = client.embeddings.create(
+        input="Query Unsuccessful",
+        model="text-embedding-3-small"
+    )
+    # the object, embeddings, which is an instance of the OpenAIEmbeddings,
+    # seems to be broken.
+
+    # since it's just a wrapper around the OpenAI API, i'll just use the API
+    # from OpenAI instead of OpenAIEmbeddings from Langchain library.
+
+    # embeddings.embed_query(["Query Unsuccessful"])
+
     table = db.create_table(
         f"{table_name}",
         data=[
             {
-                "vector": embeddings.embed_query("Query Unsuccessful"),
+                "vector": response.data[0].embedding,
                 "text": "Query Unsuccessful",
                 "id": "1",
                 "source": f"{meta}",
@@ -369,7 +381,7 @@ def dict_to_document(doc_dict):
 
 
 def create_vectorstore():
-    openai.api_key = return_api_key()
+    # openai.api_key = return_api_key()
     os.environ["OPENAI_API_KEY"] = return_api_key()
     full_docs = []
     st.subheader("Enter the topic and subject for your knowledge base")
