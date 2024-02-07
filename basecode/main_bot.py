@@ -208,8 +208,32 @@ def memory_buffer_qa_component(prompt):
     mem = st.session_state.memory.load_memory_variables({})
     # st.write(resource)
 
+    # dirty fix for updating prompt template for Thinking Facilitator (Chatbot)
+    selected_prompt = st.session_state.chatbot
+
+    if st.session_state.option == "Lesson Collaborator (Chatbot)":
+        selected_prompt = st.session_state.lesson_collaborator
+
+    if st.session_state.option == "Lesson Collaborator (Scaffolded)":
+        selected_prompt = st.session_state.lesson_collaborator
+
+    if st.session_state.option == "Lesson Commentator":
+        selected_prompt = st.session_state.lesson_commentator
+
+    if st.session_state.option == "Metacognitive Feedback":
+        selected_prompt = st.session_state.metacognitive_feedback
+
+    if st.session_state.option == "Reflective Peer":
+        selected_prompt = st.session_state.reflective_peer
+
+    if st.session_state.option == "Thinking Facilitator (Chatbot)":
+        selected_prompt = st.session_state.thinking_facilitator
+
+    if st.session_state.option == "AI Chatbot":
+        selected_prompt = st.session_state.chatbot
+
     prompt_template = (
-        st.session_state.chatbot
+        selected_prompt
         + f"""
 						Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer. 
 						Search Result:
@@ -227,7 +251,9 @@ def memory_buffer_qa_component(prompt):
 def chat_completion_qa_memory(prompt):
     openai.api_key = return_api_key()
     os.environ["OPENAI_API_KEY"] = return_api_key()
+    
     prompt_template = memory_buffer_qa_component(prompt)
+    # print(prompt_template)
     response = client.chat.completions.create(
         model=st.session_state.openai_model,
         messages=[
@@ -247,17 +273,14 @@ def chat_completion_qa_memory(prompt):
 
 def basebot_qa_memory(bot_name):
     full_response = ""
-    greetings_str = f"Hi, I am {bot_name}"
     help_str = "How can I help you today?"
     # Check if st.session_state.msg exists, and if not, initialize with greeting and help messages
     if "msg" not in st.session_state:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     elif st.session_state.msg == []:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     # lesson collaborator
@@ -275,11 +298,13 @@ def basebot_qa_memory(bot_name):
     try:
         if prompt := st.chat_input("Enter your query"):
             st.session_state.msg.append({"role": "user", "content": prompt})
+
             with st.chat_message("user"):
                 st.markdown(prompt)
 
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
+
                 full_response = ""
                 for response in chat_completion_qa_memory(prompt):
                     full_response += response.choices[0].delta.content or ""
@@ -358,17 +383,14 @@ def chat_completion_memory(prompt):
 # integration API call into streamlit chat components with memory
 def basebot_memory(bot_name):
     full_response = ""
-    greetings_str = f"Hi, I am {bot_name}"
     help_str = "How can I help you today?"
     # Check if st.session_state.msg exists, and if not, initialize with greeting and help messages
     if "msg" not in st.session_state:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     elif st.session_state.msg == []:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     for message in st.session_state.msg:
@@ -442,17 +464,14 @@ def chat_completion(prompt):
 # integration API call into streamlit chat components
 def basebot(bot_name):
     full_response = ""
-    greetings_str = f"Hi, I am {bot_name}"
     help_str = "How can I help you today?"
     # Check if st.session_state.msg exists, and if not, initialize with greeting and help messages
     if "msg" not in st.session_state:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     elif st.session_state.msg == []:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     for message in st.session_state.msg:
@@ -542,17 +561,14 @@ def chat_completion_qa(prompt):
 # chat completion with vectorstore for streamlit
 def basebot_qa(bot_name):
     full_response = ""
-    greetings_str = f"Hi, I am {bot_name}"
     help_str = "How can I help you today?"
     # Check if st.session_state.msg exists, and if not, initialize with greeting and help messages
     if "msg" not in st.session_state:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     elif st.session_state.msg == []:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     for message in st.session_state.msg:
