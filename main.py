@@ -783,8 +783,7 @@ def main():
                     basebot_memory(META_BOT)
 
         elif st.session_state.option == "AI Chatbot":
-            # Code for AI Chatbot - ZeroCode
-            st.write("Current Chatbot Template: ", st.session_state.chatbot)
+
             # check if API key is entered
             with st.expander("Chatbot Settings"):
                 vectorstore_selection_interface(st.session_state.user["id"])
