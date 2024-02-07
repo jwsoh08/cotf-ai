@@ -531,7 +531,7 @@ def load_vectorstore(documents, table_name):
     retrieved_docs_dicts = json.loads(documents)
     retrieved_docs = [dict_to_document(doc_dict) for doc_dict in retrieved_docs_dicts]
     vs = LanceDB.from_documents(
-        retrieved_docs, OpenAIEmbeddings(), connection=db.open_table(f"{table_name}")
+        retrieved_docs, OpenAIEmbeddings(openai_api_key=return_api_key()), connection=db.open_table(f"{table_name}")
     )
     return vs
 
