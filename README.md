@@ -19,3 +19,14 @@ super_admin = "super_admin"
 default_title = "GenAI Workshop Framework V2"
 sql_ext_path = "None"
 ```
+
+
+## Process to update EC2 instance on GCC.
+Any updates to GCC shall only be done on a weekly basis.
+
+Please follow these steps
+
+1. Push all updates to github repository
+2. Change visibility of project in settings to public
+3. Pull changes from EC2 instance using `git pull origin main`
+4. Change visibility of project in settings to private
