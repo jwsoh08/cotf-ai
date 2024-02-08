@@ -141,6 +141,7 @@ PANDAI = config_handler.get_value("constants", "PANDAI")
 MENU_FUNCS = config_handler.get_value("menu_lists", "MENU_FUNCS")
 META_BOT = config_handler.get_value("constants", "META_BOT")
 QA_BOT = config_handler.get_value("constants", "QA_BOT")
+AI_BOT = config_handler.get_value("constants", "AI_BOT")
 LESSON_BOT = config_handler.get_value("constants", "LESSON_BOT")
 LESSON_COLLAB = config_handler.get_value("constants", "LESSON_COLLAB")
 LESSON_COMMENT = config_handler.get_value("constants", "LESSON_COMMENT")
@@ -832,18 +833,18 @@ def main():
                     if (
                         st.session_state.memoryless
                     ):  # memoryless chatbot with knowledge base but no memory
-                        basebot_qa(LESSON_BOT)
+                        basebot_qa(AI_BOT)
                     else:
                         # chatbot with knowledge base and memory
-                        basebot_qa_memory(LESSON_BOT)
+                        basebot_qa_memory(AI_BOT)
             else:  # chatbot with no knowledge base
                 if (
                     st.session_state.memoryless
                 ):  # memoryless chatbot with no knowledge base and no memory
-                    basebot(LESSON_BOT)
+                    basebot(AI_BOT)
                 else:
                     # chatbot with no knowledge base but with memory
-                    basebot_memory(LESSON_BOT)
+                    basebot_memory(AI_BOT)
 
         elif st.session_state.option == "Agent Chatbot":
             if st.session_state.tools == []:
