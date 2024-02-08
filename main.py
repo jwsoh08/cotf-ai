@@ -5,7 +5,7 @@ import streamlit as st
 from streamlit_antd_components import menu, MenuItem
 import streamlit_antd_components as sac
 from metacog.metacog import science_feedback, reflective_peer
-from lcc.lesson_plan import lesson_bot
+from lcc.lesson_plan import lesson_bot, metacog_bot
 from basecode.main_bot import (
     basebot_memory,
     basebot_qa_memory,
@@ -141,6 +141,7 @@ PANDAI = config_handler.get_value("constants", "PANDAI")
 MENU_FUNCS = config_handler.get_value("menu_lists", "MENU_FUNCS")
 META_BOT = config_handler.get_value("constants", "META_BOT")
 QA_BOT = config_handler.get_value("constants", "QA_BOT")
+AI_BOT = config_handler.get_value("constants", "AI_BOT")
 LESSON_BOT = config_handler.get_value("constants", "LESSON_BOT")
 LESSON_COLLAB = config_handler.get_value("constants", "LESSON_COLLAB")
 LESSON_COMMENT = config_handler.get_value("constants", "LESSON_COMMENT")
@@ -693,7 +694,7 @@ def main():
             if prompt is not None:
                 if prompt["text"] != "" and prompt["question"] != "":
                     prompt_template = st.session_state.metacognitive_feedback
-                    lesson_bot(prompt, prompt_template, METACOG)
+                    metacog_bot(prompt, prompt_template, METACOG)
                 else:
                     st.warning("You will need to enter both question and text.")
 
@@ -785,7 +786,7 @@ def main():
 
         elif st.session_state.option == "AI Chatbot":
             # Code for AI Chatbot - ZeroCode
-            st.write("Current Chatbot Template: ", st.session_state.chatbot)
+
             # check if API key is entered
             with st.expander("Chatbot Settings"):
                 vectorstore_selection_interface(st.session_state.user["id"])
@@ -834,18 +835,18 @@ def main():
                     if (
                         st.session_state.memoryless
                     ):  # memoryless chatbot with knowledge base but no memory
-                        basebot_qa(LESSON_BOT)
+                        basebot_qa(AI_BOT)
                     else:
                         # chatbot with knowledge base and memory
-                        basebot_qa_memory(LESSON_BOT)
+                        basebot_qa_memory(AI_BOT)
             else:  # chatbot with no knowledge base
                 if (
                     st.session_state.memoryless
                 ):  # memoryless chatbot with no knowledge base and no memory
-                    basebot(LESSON_BOT)
+                    basebot(AI_BOT)
                 else:
                     # chatbot with no knowledge base but with memory
-                    basebot_memory(LESSON_BOT)
+                    basebot_memory(AI_BOT)
 
         elif st.session_state.option == "Agent Chatbot":
             if st.session_state.tools == []:

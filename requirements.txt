@@ -39,7 +39,8 @@ duckduckgo-search==3.9.11
 EbookLib==0.18
 effdet==0.4.1
 emoji==2.8.0
-et-xmlfile==1.1.0
+et-xmlfile==1.1.0]
+exceptiongroup==1.2.0
 executing==2.0.0
 faiss-cpu==1.7.4
 Faker==19.13.0
@@ -76,9 +77,11 @@ jsonschema==4.19.0
 jsonschema-specifications==2023.7.1
 kiwisolver==1.4.5
 lancedb==0.2.2
-langchain==0.0.314
+langchain==0.1.5
+langchain-community==0.0.18
+langchain-core==0.1.19
 langdetect==1.0.9
-langsmith==0.0.43
+langsmith==0.0.86
 layoutparser==0.3.4
 llvmlite==0.41.0
 lxml==4.9.3
@@ -109,7 +112,7 @@ openai==1.7.0
 openai-whisper==20230918
 opencv-python==4.8.0.76
 openpyxl==3.1.2
-packaging==23.1
+packaging==23.2
 pandas==1.5.3
 pandasai==1.5.13
 parso==0.8.3

@@ -208,10 +208,33 @@ def memory_buffer_qa_component(prompt):
             k=st.session_state.k_memory
         )
     mem = st.session_state.memory.load_memory_variables({})
-    # st.write(resource)
+    
+    
+    selected_prompt = st.session_state.chatbot
+
+    if st.session_state.option == "Lesson Collaborator (Chatbot)":
+        selected_prompt = st.session_state.lesson_collaborator
+
+    if st.session_state.option == "Lesson Collaborator (Scaffolded)":
+        selected_prompt = st.session_state.lesson_collaborator
+
+    if st.session_state.option == "Lesson Commentator":
+        selected_prompt = st.session_state.lesson_commentator
+
+    if st.session_state.option == "Metacognitive Feedback":
+        selected_prompt = st.session_state.metacognitive_feedback
+
+    if st.session_state.option == "Reflective Peer":
+        selected_prompt = st.session_state.reflective_peer
+
+    if st.session_state.option == "Thinking Facilitator (Chatbot)":
+        selected_prompt = st.session_state.thinking_facilitator
+
+    if st.session_state.option == "AI Chatbot":
+        selected_prompt = st.session_state.chatbot
 
     prompt_template = (
-        st.session_state.chatbot
+        selected_prompt
         + f"""
 						Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer. 
 						Search Result:
@@ -249,30 +272,20 @@ def chat_completion_qa_memory(prompt):
 
 def basebot_qa_memory(bot_name):
     full_response = ""
-    greetings_str = f"Hi, I am {bot_name}"
     help_str = "How can I help you today?"
     # Check if st.session_state.msg exists, and if not, initialize with greeting and help messages
     if "msg" not in st.session_state:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     elif st.session_state.msg == []:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     # lesson collaborator
     for message in st.session_state.msg:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-    # #adding on response
-    # if st.session_state.download_response_flag == True:
-    # 	if st.session_state.msg:  # Check if the list is not empty
-    # 		last_message = st.session_state.msg[-1]  # Access the last message
-    # 		with st.chat_message(last_message["role"]):  # Use the role from the last message
-    # 			st.markdown(last_message["content"])  # Display the content of the last message
-    # 			add_response(last_message["content"])
 
     try:
         if prompt := st.chat_input("Enter your query"):
@@ -327,8 +340,34 @@ def memory_buffer_component():
     # st.write("Messages ", messages)
     mem = st.session_state.memory.load_memory_variables({})
     # For more customisation, this can be in the config.ini file
+
+
+    selected_prompt = st.session_state.chatbot
+
+    if st.session_state.option == "Lesson Collaborator (Chatbot)":
+        selected_prompt = st.session_state.lesson_collaborator
+
+    if st.session_state.option == "Lesson Collaborator (Scaffolded)":
+        selected_prompt = st.session_state.lesson_collaborator
+
+    if st.session_state.option == "Lesson Commentator":
+        selected_prompt = st.session_state.lesson_commentator
+
+    if st.session_state.option == "Metacognitive Feedback":
+        selected_prompt = st.session_state.metacognitive_feedback
+
+    if st.session_state.option == "Reflective Peer":
+        selected_prompt = st.session_state.reflective_peer
+
+    if st.session_state.option == "Thinking Facilitator (Chatbot)":
+        selected_prompt = st.session_state.thinking_facilitator
+
+    if st.session_state.option == "AI Chatbot":
+        selected_prompt = st.session_state.chatbot
+
+
     prompt_template = (
-        st.session_state.chatbot
+         selected_prompt
         + f""" 
 						History of conversation:
 						{mem}"""
@@ -360,17 +399,14 @@ def chat_completion_memory(prompt):
 # integration API call into streamlit chat components with memory
 def basebot_memory(bot_name):
     full_response = ""
-    greetings_str = f"Hi, I am {bot_name}"
     help_str = "How can I help you today?"
     # Check if st.session_state.msg exists, and if not, initialize with greeting and help messages
     if "msg" not in st.session_state:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     elif st.session_state.msg == []:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     for message in st.session_state.msg:
@@ -444,17 +480,14 @@ def chat_completion(prompt):
 # integration API call into streamlit chat components
 def basebot(bot_name):
     full_response = ""
-    greetings_str = f"Hi, I am {bot_name}"
     help_str = "How can I help you today?"
     # Check if st.session_state.msg exists, and if not, initialize with greeting and help messages
     if "msg" not in st.session_state:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     elif st.session_state.msg == []:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     for message in st.session_state.msg:
@@ -506,10 +539,32 @@ def qa_component(prompt):
         docs = st.session_state.vs.similarity_search(prompt)
         resource = docs[0].page_content
         source = docs[0].metadata
-    # st.write(resource)
+
+    selected_prompt = st.session_state.chatbot
+
+    if st.session_state.option == "Lesson Collaborator (Chatbot)":
+        selected_prompt = st.session_state.lesson_collaborator
+
+    if st.session_state.option == "Lesson Collaborator (Scaffolded)":
+        selected_prompt = st.session_state.lesson_collaborator
+
+    if st.session_state.option == "Lesson Commentator":
+        selected_prompt = st.session_state.lesson_commentator
+
+    if st.session_state.option == "Metacognitive Feedback":
+        selected_prompt = st.session_state.metacognitive_feedback
+
+    if st.session_state.option == "Reflective Peer":
+        selected_prompt = st.session_state.reflective_peer
+
+    if st.session_state.option == "Thinking Facilitator (Chatbot)":
+        selected_prompt = st.session_state.thinking_facilitator
+
+    if st.session_state.option == "AI Chatbot":
+        selected_prompt = st.session_state.chatbot
 
     prompt_template = (
-        st.session_state.chatbot
+        selected_prompt
         + f"""
 						Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer. 
 						Search Result:
@@ -544,17 +599,14 @@ def chat_completion_qa(prompt):
 # chat completion with vectorstore for streamlit
 def basebot_qa(bot_name):
     full_response = ""
-    greetings_str = f"Hi, I am {bot_name}"
     help_str = "How can I help you today?"
     # Check if st.session_state.msg exists, and if not, initialize with greeting and help messages
     if "msg" not in st.session_state:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     elif st.session_state.msg == []:
         st.session_state.msg = [
-            {"role": "assistant", "content": greetings_str},
             {"role": "assistant", "content": help_str},
         ]
     for message in st.session_state.msg:

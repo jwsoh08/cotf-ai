@@ -3,7 +3,7 @@ import sqlite3
 import streamlit_antd_components as sac
 import pandas as pd
 import os
-import openai
+
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.text_splitter import CharacterTextSplitter
@@ -16,7 +16,7 @@ import ast
 import json
 
 from .services.aws import SecretsManager
-
+from openai import OpenAI
 
 class ConfigHandler:
     def __init__(self):
@@ -278,11 +278,19 @@ def create_lancedb_table(embeddings, meta, table_name):
     lancedb_path = os.path.join(WORKING_DIRECTORY, "lancedb")
     # LanceDB connection
     db = lancedb.connect(lancedb_path)
+
+    client = OpenAI()
+    response = client.embeddings.create(
+        input="Query Unsuccessful",
+        model="text-embedding-3-small"
+    )
+
+
     table = db.create_table(
         f"{table_name}",
         data=[
             {
-                "vector": embeddings.embed_query("Query Unsuccessful"),
+                "vector": response.data[0].embedding,
                 "text": "Query Unsuccessful",
                 "id": "1",
                 "source": f"{meta}",
@@ -371,7 +379,6 @@ def dict_to_document(doc_dict):
 
 
 def create_vectorstore():
-    openai.api_key = return_api_key()
     os.environ["OPENAI_API_KEY"] = return_api_key()
     full_docs = []
     st.subheader("Enter the topic and subject for your knowledge base")
@@ -481,27 +488,6 @@ def create_vectorstore():
             full_docs_dicts = [document_to_dict(doc) for doc in full_docs]
             docs_json = json.dumps(full_docs_dicts)
 
-            # db = LanceDB.from_documents(full_docs, OpenAIEmbeddings(), connection=create_lancedb_table(embeddings, meta, vs_name))
-            # table = create_lancedb_table(embeddings, meta, vs_name)
-            # lancedb_path = os.path.join(WORKING_DIRECTORY, "lancedb")
-            # LanceDB connection
-            # db = lancedb.connect(lancedb_path)
-            # st.session_state.test1 = table
-            # st.write("full_docs",full_docs)
-            # full_docs_dicts = [document_to_dict(doc) for doc in full_docs]
-            # docs_json = json.dumps(full_docs_dicts)
-            # st.write("docs_json",docs_json)
-            # retrieved_docs_dicts = get_docs()  # Assuming this returns the list of dictionaries
-            # retrieved_docs_dicts = json.loads(docs_json)
-            # retrieved_docs = [dict_to_document(doc_dict) for doc_dict in retrieved_docs_dicts]
-            # st.write("retrieved_docs",retrieved_docs)
-            # st.session_state.test2 = json.loads(docs_json)
-            # st.session_state.vs = LanceDB.from_documents(retrieved_docs , OpenAIEmbeddings(), connection= db.open_table("_(super_admin)"))
-            # st.session_state.current_model = "test1"
-            # st.write(st.session_state.test1)
-            # st.write(st.session_state.test2)
-            # st.write(type(db))
-            # st.session_state.vs = load_vectorstore(documents, table_name)
             create_lancedb_table(embeddings, meta, vs_name)
             save_to_vectorstores(
                 docs_json,
@@ -521,7 +507,7 @@ def load_vectorstore(documents, table_name):
     retrieved_docs_dicts = json.loads(documents)
     retrieved_docs = [dict_to_document(doc_dict) for doc_dict in retrieved_docs_dicts]
     vs = LanceDB.from_documents(
-        retrieved_docs, OpenAIEmbeddings(), connection=db.open_table(f"{table_name}")
+        retrieved_docs, OpenAIEmbeddings(openai_api_key=return_api_key()), connection=db.open_table(f"{table_name}")
     )
     return vs
 

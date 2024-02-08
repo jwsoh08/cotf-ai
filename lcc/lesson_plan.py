@@ -65,7 +65,7 @@ def generator_rating():
     return rating_value
 
 
-def lesson_bot(prompt, prompt_template, bot_name):
+def metacog_bot(prompt, prompt_template, bot_name):
     try:
         prompt_question = prompt['question']
         prompt_text = prompt['text']
@@ -117,6 +117,83 @@ def lesson_bot(prompt, prompt_template, bot_name):
                 now.strftime("%d/%m/%Y %H:%M:%S"),
                 full_response,
                 input_prompt,
+                num_tokens,
+                bot_name,
+                feedback_value,
+            )
+            st.session_state.data_doc = (
+                st.session_state.data_doc + "\n\n" + full_response
+            )
+            md_filename = "lp" + st.session_state.user["username"] + ".md"
+            md_filepath = os.path.join("lesson_plan", md_filename)
+            if not os.path.exists("lesson_plan"):
+                os.makedirs("lesson_plan")
+            with open(md_filepath, "w", encoding="utf-8") as file:
+                file.write(full_response)
+            # Convert the markdown file to a docx
+            base_filepath = os.path.join(
+                "lesson_plan", "lp" + st.session_state.user["username"]
+            )
+            project = Markdown2docx(base_filepath)
+            project.eat_soup()
+            project.save()  # Assuming it saves the file with the same name but a .docx extension
+            st.session_state.generated_flag = True
+
+    except Exception as e:
+        st.error(e)
+
+
+def lesson_bot(prompt, prompt_template, bot_name):
+    try:
+        # prompt_question = prompt['question']
+        # prompt_text = prompt['text']
+
+        if prompt:
+            # st.write("I am inside", st.session_state.lesson_col_prompt)
+            if "memory" not in st.session_state:
+                st.session_state.memory = ConversationBufferWindowMemory(k=5)
+
+            st.session_state.msg.append({"role": "user", "content": "input: " + prompt})
+
+            message_placeholder = st.empty()
+
+            # check if there is any knowledge base
+            if st.session_state.vs:
+                docs = st.session_state.vs.similarity_search(
+                    prompt
+                )
+                resources = docs[0].page_content
+                reference_prompt = f"""You may refer to this resources to improve or design the lesson
+										{resources}
+									"""
+            else:
+                reference_prompt = ""
+
+            full_response = ""
+
+
+            for response in template_prompt(prompt, reference_prompt + prompt_template):
+                full_response += response.choices[0].delta.content or ""
+                message_placeholder.markdown(full_response + "▌")
+            if bot_name == LESSON_COLLAB:
+                feedback_value = generator_rating()
+            else:
+                feedback_value = commentator_rating()
+            message_placeholder.markdown(full_response)
+            st.session_state.msg.append({"role": "assistant", "content": full_response})
+            st.session_state["memory"].save_context(
+                {"input": prompt}, {"output": full_response}
+            )
+            # This is to send the lesson_plan to the lesson design map
+            st.session_state.lesson_plan = full_response
+            # Insert data into the table
+            now = datetime.now()  # Using ISO format for date
+            num_tokens = len(full_response + prompt) * 1.3
+            # st.write(num_tokens)
+            insert_into_data_table(
+                now.strftime("%d/%m/%Y %H:%M:%S"),
+                full_response,
+                prompt,
                 num_tokens,
                 bot_name,
                 feedback_value,
