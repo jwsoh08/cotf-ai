@@ -8,8 +8,6 @@ import configparser
 import os
 import ast
 
-from .services.aws import SecretsManager
-
 
 class ConfigHandler:
     def __init__(self):

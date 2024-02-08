@@ -2,7 +2,6 @@ import sqlite3
 import streamlit as st
 import os
 
-from .services.aws import SecretsManager
 
 # clear no error in creating schema
 

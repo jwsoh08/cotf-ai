@@ -6,7 +6,6 @@ import configparser
 import os
 import ast
 
-from .services.aws import SecretsManager
 
 config = configparser.ConfigParser()
 config.read("config.ini")

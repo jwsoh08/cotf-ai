@@ -12,7 +12,6 @@ import configparser
 import os
 from Markdown2docx import Markdown2docx
 
-from .services.aws import SecretsManager
 
 client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
@@ -196,7 +195,7 @@ def clear_session_states():
 # below ------------------------------ QA  base bot , K=2 memory for short term memory---------------------------------------------
 # using the query from lanceDB and vector store , combine with memory
 def memory_buffer_qa_component(prompt):
- 
+
     if st.session_state.vs:
         docs = st.session_state.vs.similarity_search(prompt)
         resource = docs[0].page_content
@@ -250,7 +249,7 @@ def memory_buffer_qa_component(prompt):
 def chat_completion_qa_memory(prompt):
     openai.api_key = return_api_key()
     os.environ["OPENAI_API_KEY"] = return_api_key()
-    
+
     prompt_template = memory_buffer_qa_component(prompt)
     # print(prompt_template)
     response = client.chat.completions.create(
@@ -365,7 +364,7 @@ def memory_buffer_component():
 
     if st.session_state.option == "AI Chatbot":
         selected_prompt = st.session_state.chatbot
-    
+
     prompt_template = (
         selected_prompt
         + f""" 
@@ -536,7 +535,7 @@ def qa_component(prompt):
         resource = docs[0].page_content
         source = docs[0].metadata
     # st.write(resource)
-        
+
     selected_prompt = st.session_state.chatbot
 
     if st.session_state.option == "Lesson Collaborator (Chatbot)":
@@ -559,7 +558,6 @@ def qa_component(prompt):
 
     if st.session_state.option == "AI Chatbot":
         selected_prompt = st.session_state.chatbot
-
 
     prompt_template = (
         selected_prompt

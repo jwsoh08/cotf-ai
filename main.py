@@ -301,9 +301,6 @@ def main():
         create_dbs()
         initialise_admin_account()
 
-        # PLEASE REMOVE THIS or COMMENT IT
-        # st.write("User Profile: ", st.session_state.user)
-
         # PLEASE REMOVE ABOVE
         with st.sidebar:  # options for sidebar
             if st.session_state.login == False:
@@ -656,7 +653,6 @@ def main():
                     container.empty()
                     st.rerun()
                 if st.session_state.lesson_col_prompt:
-                    # st.write("I am here", st.session_state.lesson_col_prompt)
                     lesson_bot(
                         st.session_state.lesson_col_prompt,
                         st.session_state.lesson_collaborator,
