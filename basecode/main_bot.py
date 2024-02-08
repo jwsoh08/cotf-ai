@@ -196,7 +196,7 @@ def clear_session_states():
 # below ------------------------------ QA  base bot , K=2 memory for short term memory---------------------------------------------
 # using the query from lanceDB and vector store , combine with memory
 def memory_buffer_qa_component(prompt):
-    # st.write(type(st.session_state.vs))
+ 
     if st.session_state.vs:
         docs = st.session_state.vs.similarity_search(prompt)
         resource = docs[0].page_content
@@ -206,7 +206,6 @@ def memory_buffer_qa_component(prompt):
             k=st.session_state.k_memory
         )
     mem = st.session_state.memory.load_memory_variables({})
-    # st.write(resource)
 
     # dirty fix for updating prompt template for Thinking Facilitator (Chatbot)
     selected_prompt = st.session_state.chatbot
