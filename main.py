@@ -5,7 +5,7 @@ import streamlit as st
 from streamlit_antd_components import menu, MenuItem
 import streamlit_antd_components as sac
 from metacog.metacog import science_feedback, reflective_peer
-from lcc.lesson_plan import lesson_bot
+from lcc.lesson_plan import lesson_bot, metacog_bot
 from basecode.main_bot import (
     basebot_memory,
     basebot_qa_memory,
@@ -641,7 +641,7 @@ def main():
             container = st.container()
             with container:
                 st.session_state.lesson_col_prompt = lesson_collaborator()
-                # on = sac.buttons([sac.ButtonsItem(label=f"Continue Conversation at {LESSON_BOT}", color='#40826D')], format_func='title', index=None, size='small',type='primary')
+                on = sac.buttons([sac.ButtonsItem(label=f"Continue Conversation at {LESSON_BOT}", color='#40826D')], format_func='title', index=None, size='small',type='primary')
                 on = sac.switch(
                     label=f"Continue Conversation at {LESSON_BOT}",
                     value=False,
@@ -693,7 +693,7 @@ def main():
             if prompt is not None:
                 if prompt["text"] != "" and prompt["question"] != "":
                     prompt_template = st.session_state.metacognitive_feedback
-                    lesson_bot(prompt, prompt_template, METACOG)
+                    metacog_bot(prompt, prompt_template, METACOG)
                 else:
                     st.warning("You will need to enter both question and text.")
 
