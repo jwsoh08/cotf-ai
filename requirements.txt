@@ -39,7 +39,7 @@ duckduckgo-search==3.9.11
 EbookLib==0.18
 effdet==0.4.1
 emoji==2.8.0
-et-xmlfile==1.1.0]
+et-xmlfile==1.1.0
 exceptiongroup==1.2.0
 executing==2.0.0
 faiss-cpu==1.7.4
