@@ -10,6 +10,7 @@ from langchain.chat_models import ChatOpenAI
 import streamlit_antd_components as sac
 import configparser
 import os
+import pytz
 from Markdown2docx import Markdown2docx
 
 from .services.aws import SecretsManager
@@ -164,6 +165,17 @@ def insert_into_data_table(
     conn = sqlite3.connect(WORKING_DATABASE)
     cursor = conn.cursor()
 
+    # Override with Singapore Datetime
+    # Get the current time in UTC
+    current_time_utc = datetime.utcnow()
+    # Specify the Singapore timezone
+    singapore_timezone = pytz.timezone('Asia/Singapore')
+    # Convert UTC time to Singapore time
+    current_time_singapore = current_time_utc.replace(tzinfo=pytz.utc).astimezone(singapore_timezone)
+    # Format the current time in Singapore time
+    formatted_time_singapore = current_time_singapore.strftime("%Y-%m-%d %H:%M:%S")
+
+
     # Insert data into Data_Table using preloaded session state value
     cursor.execute(
         """
@@ -171,7 +183,7 @@ def insert_into_data_table(
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	""",
         (
-            date,
+            formatted_time_singapore,
             st.session_state.data_profile["user_id"],
             st.session_state.data_profile["profile_id"],
             chatbot_ans,

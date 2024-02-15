@@ -8,10 +8,10 @@ def science_feedback():
         inputs = {}
 
         with st.form("Metacognitive Feedback"):
-            question = st.text_input("Science question")
-            text = st.text_area("Science text for analysis")
+            question = st.text_input("Question")
+            text = st.text_area("Text for analysis")
 
-            submitted = st.form_submit_button("Submit Science text for feedback")
+            submitted = st.form_submit_button("Submit text for feedback")
 
             if submitted:
                 inputs["question"] = question

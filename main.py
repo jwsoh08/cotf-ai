@@ -123,11 +123,20 @@ config_handler = ConfigHandler()
 # Setting Streamlit configurations
 st.set_page_config(layout="wide")
 
-# Fetching secrets from Streamlit
-DEFAULT_TITLE = SecretsManager.get_secret("default_title")
-SUPER_PWD = SecretsManager.get_secret("super_admin_password")
-SUPER = SecretsManager.get_secret("super_admin")
-DEFAULT_DB = SecretsManager.get_secret("default_db")
+# Check application environment => GCC or Streamlit
+ENV = config_handler.get_value("constants", "prototype_env")
+
+if ENV == "GCC":
+    # Fetching secrets from AWS Secrets Manager
+    DEFAULT_TITLE = SecretsManager.get_secret("default_title")
+    SUPER_PWD = SecretsManager.get_secret("super_admin_password")
+    SUPER = SecretsManager.get_secret("super_admin")
+    DEFAULT_DB = SecretsManager.get_secret("default_db")
+else: 
+    DEFAULT_TITLE = st.secrets["default_title"]
+    SUPER_PWD = st.secrets["super_admin_password"]
+    SUPER = st.secrets["super_admin"]
+    DEFAULT_DB = st.secrets["default_db"]
 
 # Fetching values from config.ini
 DEFAULT_TEXT = config_handler.get_value("constants", "DEFAULT_TEXT")
@@ -212,7 +221,10 @@ def main():
             st.session_state.start = 0
 
         if "openai_model" not in st.session_state:
-            st.session_state.openai_model = SecretsManager.get_secret("default_model")
+            if ENV == "GCC":
+                st.session_state.openai_model = SecretsManager.get_secret("default_model")
+            else:
+                st.session_state.openai_model = st.secrets["default_model"]
 
         if "msg" not in st.session_state:
             st.session_state.msg = []
@@ -224,25 +236,43 @@ def main():
             st.session_state.lesson_plan = ""
 
         if "temp" not in st.session_state:
-            st.session_state.temp = int(SecretsManager.get_secret("default_temp"))
+            if ENV == "GCC":
+                st.session_state.temp = int(SecretsManager.get_secret("default_temp"))
+            else:
+                st.session_state.temp = int(st.secrets["default_temp"])
 
         if "acknowledgement" not in st.session_state:
             st.session_state.acknowledgement = False
 
         if "frequency_penalty" not in st.session_state:
-            st.session_state.frequency_penalty = int(
-                SecretsManager.get_secret("default_frequency_penalty")
-            )
+            if ENV == "GCC":
+                st.session_state.frequency_penalty = int(
+                    SecretsManager.get_secret("default_frequency_penalty")
+                )
+            else:
+                st.session_state.frequency_penalty = int(
+                    st.secrets["default_frequency_penalty"]
+                )
 
         if "presence_penalty" not in st.session_state:
-            st.session_state.presence_penalty = int(
-                SecretsManager.get_secret("default_presence_penalty")
-            )
+            if ENV == "GCC":
+                st.session_state.presence_penalty = int(
+                    SecretsManager.get_secret("default_presence_penalty")
+                )
+            else:
+                st.session_state.presence_penalty = int(
+                    st.secrets["default_presence_penalty"]
+                )
 
         if "k_memory" not in st.session_state:
-            st.session_state.k_memory = int(
-                SecretsManager.get_secret("default_k_memory")
-            )
+            if ENV == "GCC":
+                st.session_state.k_memory = int(
+                    SecretsManager.get_secret("default_k_memory")
+                )
+            else:
+                st.session_state.k_memory = int(
+                    st.secrets["default_k_memory"]
+                )
 
         if "memoryless" not in st.session_state:
             st.session_state.memoryless = False
@@ -721,47 +751,48 @@ def main():
             # be removed by Joe.
 
             # Metacog settings
-            with st.expander("Thinking Facilitator Settings"):
-                vectorstore_selection_interface(st.session_state.user["id"])
+            # Hide chatbot setting
+            # with st.expander("Thinking Facilitator Settings"):
+            #     vectorstore_selection_interface(st.session_state.user["id"])
 
-                if st.session_state.vs:
-                    vs_flag = False
-                else:
-                    vs_flag = True
+            #     if st.session_state.vs:
+            #         vs_flag = False
+            #     else:
+            #         vs_flag = True
 
-                options = sac.chip(
-                    items=[
-                        sac.ChipItem(
-                            label="Raw Search", icon="search", disabled=vs_flag
-                        ),
-                        sac.ChipItem(label="Enable Memory", icon="memory"),
-                        sac.ChipItem(label="Capture Responses", icon="camera-fill"),
-                        sac.ChipItem(label="Download Responses", icon="download"),
-                    ],
-                    index=[1, 2],
-                    format_func="title",
-                    radius="sm",
-                    size="sm",
-                    align="left",
-                    variant="light",
-                    multiple=True,
-                )
+            #     options = sac.chip(
+            #         items=[
+            #             sac.ChipItem(
+            #                 label="Raw Search", icon="search", disabled=vs_flag
+            #             ),
+            #             sac.ChipItem(label="Enable Memory", icon="memory"),
+            #             sac.ChipItem(label="Capture Responses", icon="camera-fill"),
+            #             sac.ChipItem(label="Download Responses", icon="download"),
+            #         ],
+            #         index=[1, 2],
+            #         format_func="title",
+            #         radius="sm",
+            #         size="sm",
+            #         align="left",
+            #         variant="light",
+            #         multiple=True,
+            #     )
 
-                # Update state based on new chip selections
-                raw_search = "Raw Search" in options
-                st.session_state.memoryless = "Enable Memory" not in options
-                st.session_state.rating = "Rating Function" in options
-                st.session_state.download_response_flag = "Capture Responses" in options
-                preview_download_response = "Download Responses" in options
+            #     # Update state based on new chip selections
+            #     raw_search = "Raw Search" in options
+            #     st.session_state.memoryless = "Enable Memory" not in options
+            #     st.session_state.rating = "Rating Function" in options
+            #     st.session_state.download_response_flag = "Capture Responses" in options
+            #     preview_download_response = "Download Responses" in options
 
-                clear = sac.switch(
-                    label="Clear Chat", value=False, align="start", position="left"
-                )
+            #     clear = sac.switch(
+            #         label="Clear Chat", value=False, align="start", position="left"
+            #     )
 
-                if clear == True:
-                    clear_session_states()
-                if preview_download_response:
-                    complete_my_lesson()
+            #     if clear == True:
+            #         clear_session_states()
+            #     if preview_download_response:
+            #         complete_my_lesson()
 
             # chatbot with knowledge base
             if st.session_state.vs:
