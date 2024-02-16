@@ -117,7 +117,7 @@ def fetch_data_by_school(sch_id):
     # Fetch data from Data_Table for all users of the given school using JOIN
     cursor.execute(
         """
-            SELECT Data_Table.* 
+            SELECT Users.username, Data_Table.* 
             FROM Data_Table
             JOIN Users ON Data_Table.user_id = Users.user_id
             WHERE Users.school_id=?
@@ -139,7 +139,7 @@ def fetch_data_by_sa(sch_id):
     # Fetch data from Data_Table for all users of the given school using JOIN
     cursor.execute(
         """
-            SELECT Data_Table.* 
+            SELECT Users.username, Data_Table.* 
             FROM Data_Table
             JOIN Users ON Data_Table.user_id = Users.user_id
             WHERE Users.school_id=? OR Users.school_id IS NULL
@@ -161,7 +161,7 @@ def fetch_data_by_school(sch_id):
     # Fetch data from Data_Table for all users of the given school using JOIN
     cursor.execute(
         """
-            SELECT Data_Table.* 
+            SELECT Users.username, Data_Table.* 
             FROM Data_Table
             JOIN Users ON Data_Table.user_id = Users.user_id
             WHERE Users.school_id=?
