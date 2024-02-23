@@ -10,6 +10,8 @@ import ast
 
 from .services.aws import SecretsManager
 
+config = configparser.ConfigParser()
+config.read("config.ini")
 
 class ConfigHandler:
     def __init__(self):
@@ -25,12 +27,22 @@ class ConfigHandler:
             # If not a data structure, return the plain string
             return value
 
-
 config_handler = ConfigHandler()
-SUPER_PWD = SecretsManager.get_secret("super_admin_password")
-SUPER = SecretsManager.get_secret("super_admin")
-STU_PASS = SecretsManager.get_secret("student_password")
-TCH_PASS = SecretsManager.get_secret("teacher_password")
+
+# Check application environment => GCC or Streamlit
+ENV = config_handler.get_config_values("constants", "prototype_env")
+
+if ENV == "GCC":
+    SUPER_PWD = SecretsManager.get_secret("super_admin_password")
+    SUPER = SecretsManager.get_secret("super_admin")
+    STU_PASS = SecretsManager.get_secret("student_password")
+    TCH_PASS = SecretsManager.get_secret("teacher_password")
+else:
+    SUPER_PWD = st.secrets["super_admin_password"]
+    SUPER = st.secrets["super_admin"]
+    STU_PASS = st.secrets["student_password"]
+    TCH_PASS = st.secrets["teacher_password"]
+
 DEFAULT_TEXT = config_handler.get_config_values("constants", "DEFAULT_TEXT")
 STK_PROMPT_TEMPLATES = config_handler.get_config_values(
     "menu_lists", "STK_PROMPT_TEMPLATES"
@@ -54,13 +66,20 @@ WORKING_DIRECTORY = os.path.join(cwd, "database")
 if not os.path.exists(WORKING_DIRECTORY):
     os.makedirs(WORKING_DIRECTORY)
 
-if SecretsManager.get_secret("sql_ext_path") == "None":
-    WORKING_DATABASE = os.path.join(
-        WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
-    )
+if ENV == "GCC":
+    if SecretsManager.get_secret("sql_ext_path") == "None":
+        WORKING_DATABASE = os.path.join(
+            WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
+        )
+    else:
+        WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
-    WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
-
+    if st.secrets["sql_ext_path"] == "None":
+        WORKING_DATABASE = os.path.join(
+            WORKING_DIRECTORY, st.secrets["default_db"]
+        )
+    else:
+        WORKING_DATABASE = st.secrets["sql_ext_path"]
 
 def has_at_least_two_rows():
     # Connect to the SQLite database

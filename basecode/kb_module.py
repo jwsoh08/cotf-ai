@@ -47,12 +47,23 @@ WORKING_DIRECTORY = os.path.join(cwd, "database")
 if not os.path.exists(WORKING_DIRECTORY):
     os.makedirs(WORKING_DIRECTORY)
 
-if SecretsManager.get_secret("sql_ext_path") == "None":
-    WORKING_DATABASE = os.path.join(
-        WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
-    )
+# Check application environment => GCC or Streamlit
+ENV = config_handler.get_config_values("constants", "prototype_env")
+
+if ENV == "GCC":
+    if SecretsManager.get_secret("sql_ext_path") == "None":
+        WORKING_DATABASE = os.path.join(
+            WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
+        )
+    else:
+        WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
-    WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
+    if st.secrets["sql_ext_path"] == "None":
+        WORKING_DATABASE = os.path.join(
+            WORKING_DIRECTORY, st.secrets["default_db"]
+        )
+    else:
+        WORKING_DATABASE = st.secrets["sql_ext_path"]
 
 # os.environ["OPENAI_API_KEY"] = return_api_key()
 lancedb_path = os.path.join(WORKING_DIRECTORY, "lancedb")

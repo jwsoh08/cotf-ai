@@ -5,7 +5,7 @@ import time
 import os
 import zipfile
 import boto3
-
+import configparser
 from .services.aws import SecretsManager
 
 # if "S3_BUCKET" in st.secrets:
@@ -21,13 +21,25 @@ WORKING_DIRECTORY = os.path.join(cwd, "database")
 if not os.path.exists(WORKING_DIRECTORY):
     os.makedirs(WORKING_DIRECTORY)
 
-if SecretsManager.get_secret("sql_ext_path") == "None":
-    WORKING_DATABASE = os.path.join(
-        WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
-    )
-else:
-    WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
+config = configparser.ConfigParser()
+config.read("config.ini")
+# Check application environment => GCC or Streamlit
+ENV = config["constants"]["prototype_env"]
 
+if ENV == "GCC":
+    if SecretsManager.get_secret("sql_ext_path") == "None":
+        WORKING_DATABASE = os.path.join(
+            WORKING_DIRECTORY, SecretsManager.get_secret("default_db")
+        )
+    else:
+        WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
+else:
+    if st.secrets["sql_ext_path"] == "None":
+        WORKING_DATABASE = os.path.join(
+            WORKING_DIRECTORY, st.secrets["default_db"]
+        )
+    else:
+        WORKING_DATABASE = st.secrets["sql_ext_path"]
 
 def delete_tables():
     # Connect to the SQLite database
@@ -284,24 +296,43 @@ def upload_database():
 
 
 def upload_to_s3(file_name, bucket, s3_file_name):
-    s3 = boto3.client(
-        "s3",
-        region_name=SecretsManager.get_secret("AWS")["AWS_DEFAULT_REGION"],
-        aws_access_key_id=SecretsManager.get_secret("AWS")["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=SecretsManager.get_secret("AWS")["AWS_SECRET_ACCESS_KEY"],
-    )
-    s3.upload_file(file_name, bucket, s3_file_name)
+
+    if ENV == "GCC":
+        s3 = boto3.client(
+            "s3",
+            region_name=SecretsManager.get_secret("AWS")["AWS_DEFAULT_REGION"],
+            aws_access_key_id=SecretsManager.get_secret("AWS")["AWS_ACCESS_KEY_ID"],
+            aws_secret_access_key=SecretsManager.get_secret("AWS")["AWS_SECRET_ACCESS_KEY"],
+        )
+        s3.upload_file(file_name, bucket, s3_file_name)
+    else:
+        s3 = boto3.client(
+            "s3",
+            region_name=st.secrets["AWS"]["AWS_DEFAULT_REGION"],
+            aws_access_key_id=st.secrets["AWS"]["AWS_ACCESS_KEY_ID"],
+            aws_secret_access_key=st.secrets["AWS"]["AWS_SECRET_ACCESS_KEY"],
+        )
+        s3.upload_file(file_name, bucket, s3_file_name)
 
 
 def download_from_s3(bucket, s3_file_name, local_file_name):
-    s3 = boto3.client(
-        "s3",
-        region_name=SecretsManager.get_secret("AWS")["AWS_DEFAULT_REGION"],
-        aws_access_key_id=SecretsManager.get_secret("AWS")["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=SecretsManager.get_secret("AWS")["AWS_SECRET_ACCESS_KEY"],
-    )
-    s3.download_file(bucket, s3_file_name, local_file_name)
 
+    if ENV == "GCC":
+        s3 = boto3.client(
+            "s3",
+            region_name=SecretsManager.get_secret("AWS")["AWS_DEFAULT_REGION"],
+            aws_access_key_id=SecretsManager.get_secret("AWS")["AWS_ACCESS_KEY_ID"],
+            aws_secret_access_key=SecretsManager.get_secret("AWS")["AWS_SECRET_ACCESS_KEY"],
+        )
+        s3.download_file(bucket, s3_file_name, local_file_name)
+    else:
+        s3 = boto3.client(
+            "s3",
+            region_name=st.secrets["AWS"]["AWS_DEFAULT_REGION"],
+            aws_access_key_id=st.secrets["AWS"]["AWS_ACCESS_KEY_ID"],
+            aws_secret_access_key=st.secrets["AWS"]["AWS_SECRET_ACCESS_KEY"],
+        )
+        s3.download_file(bucket, s3_file_name, local_file_name)
 
 def upload_s3_database():
     if st.button("Upload Database to S3"):
@@ -392,16 +423,27 @@ def download_from_s3_and_unzip():
 
 def check_aws_secrets_exist():
     try:
-        # Check if all required AWS secrets are available
-        if (
-            "AWS" in st.secrets
-            and "AWS_DEFAULT_REGION" in SecretsManager.get_secret("AWS")
-            and "AWS_ACCESS_KEY_ID" in SecretsManager.get_secret("AWS")
-            and "AWS_SECRET_ACCESS_KEY" in SecretsManager.get_secret("AWS")
-        ):
-            return True
+        if ENV == "GCC":
+            # Check if all required AWS secrets are available
+            if (
+                "AWS" in st.secrets
+                and "AWS_DEFAULT_REGION" in SecretsManager.get_secret("AWS")
+                and "AWS_ACCESS_KEY_ID" in SecretsManager.get_secret("AWS")
+                and "AWS_SECRET_ACCESS_KEY" in SecretsManager.get_secret("AWS")
+            ):
+                return True
+            else:
+                return False
         else:
-            return False
+            if (
+                "AWS" in st.secrets
+                and "AWS_DEFAULT_REGION" in st.secrets["AWS"]
+                and "AWS_ACCESS_KEY_ID" in st.secrets["AWS"]
+                and "AWS_SECRET_ACCESS_KEY" in st.secrets["AWS"]
+            ):
+                return True
+            else:
+                return False
     except Exception as e:
         st.warning(f"Error checking AWS secrets: {e}")
         return False

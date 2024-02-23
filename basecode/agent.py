@@ -18,7 +18,12 @@ from langchain.agents import tool
 import json
 
 from .services.aws import SecretsManager
+import configparser
 
+config = configparser.ConfigParser()
+config.read("config.ini")
+# Check application environment => GCC or Streamlit
+ENV = config["constants"]["prototype_env"]
 
 # smart agents accessing the internet for free
 # https://github.com/langchain-ai/streamlit-agent/blob/main/streamlit_agent/search_and_chat.py
@@ -84,8 +89,14 @@ def agent_bot():
     if prompt := st.chat_input(placeholder="Enter a query on the Internet"):
         st.chat_message("user").write(prompt)
 
+        model = "gpt-4-turbo-preview"
+        if ENV == "GCC":
+            model = SecretsManager.get_secret("default_model")
+        else:
+            model = st.secrets["default_model"]
+
         llm = ChatOpenAI(
-            model_name=SecretsManager.get_secret("default_model"),
+            model_name=model,
             openai_api_key=return_api_key(),
             streaming=True,
         )
