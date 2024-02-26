@@ -1,4 +1,14 @@
+# Introduction
+This codebase serves the needs of different teams, whom utilises different features that it offers. Currently, at this point in time, two features are being used.
 
+- Lesson Collaborator Chatbot (LCC)
+- Metacogition (Metacog)
+
+## Production URLs
+- https://cotf-lcc-prototype.com
+- https://cotf-metacog-prototype.com
+
+## Secrets
 > [!IMPORTANT]  
 > The following env variables are required for setup. You can add this to the `secrets.toml` file in your streamlit deployment
 
@@ -20,11 +30,8 @@ default_title = "GenAI Workshop Framework V2"
 sql_ext_path = "None"
 ```
 
-
-## Process to update EC2 instance on GCC.
-Any updates to GCC shall only be done on a weekly basis.
-
-Please follow these steps
+## Deployment and Continuous Integration
+Do follow the process below to update the EC2 instance on GCC AWS. Any updates shall only be done on a weekly basis.
 
 1. Push all updates to github repository
 2. Change visibility of project in settings to public
