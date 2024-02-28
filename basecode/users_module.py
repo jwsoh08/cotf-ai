@@ -728,16 +728,19 @@ def load_available_shared_owned_vector_stores(user_id):
         elif profile_id == AD:
             cursor.execute(
                 """
-                SELECT vs_id, vectorstore_name 
-                FROM Vector_Stores
-                WHERE user_id IN (SELECT user_id FROM Users WHERE org_id = ?)
+                SELECT vs.vs_id, vs.vectorstore_name 
+                FROM Vector_Stores vs
+                INNER JOIN Profile_VectorStores pvs ON vs.vs_id = pvs.vs_id
+                WHERE vs.sharing_enabled = 1 AND pvs.profile_id = ?
             """,
-                (org_id,),
+                (profile_id,),
             )
-            return [
-                {"vs_id": row[0], "vectorstore_name": row[1]}
-                for row in cursor.fetchall()
-            ]
+            accessible_vectorstores.extend(
+                [
+                    {"vs_id": row[0], "vectorstore_name": row[1]}
+                    for row in cursor.fetchall()
+                ]
+            )
 
         # For other profiles
         else:
