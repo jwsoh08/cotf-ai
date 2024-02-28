@@ -795,15 +795,16 @@ def main():
 
             # chatbot with knowledge base
             if st.session_state.vs:
-                if raw_search == True:
-                    search_bot()
+                # Hide chatbot setting
+                # if raw_search == True:
+                #     search_bot()
+                # else:
+                if st.session_state.memoryless:
+                    # memoryless chatbot with knowledge base but no memory
+                    basebot_qa(META_BOT)
                 else:
-                    if st.session_state.memoryless:
-                        # memoryless chatbot with knowledge base but no memory
-                        basebot_qa(META_BOT)
-                    else:
-                        # chatbot with knowledge base and memory
-                        basebot_qa_memory(META_BOT)
+                    # chatbot with knowledge base and memory
+                    basebot_qa_memory(META_BOT)
 
             # chatbot with no knowledge base
             else:
