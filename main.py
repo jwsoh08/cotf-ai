@@ -1,4 +1,5 @@
-# No need SQLite
+import configparser
+import ast
 import nltk
 import streamlit as st
 
@@ -79,16 +80,16 @@ from lcc.lesson_plan import (
     lesson_collaborator,
     lesson_bot,
     lesson_design_options,
-    lesson_commentator,
     lesson_map_generator,
 )
 
-from PIL import Image
-import configparser
-import ast
+from functions.lesson_commentator import lesson_commentator
 
 from basecode.services.aws import SecretsManager
 
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env.
 
 def download_nltk_data_if_absent(package_name):
     try:
@@ -162,6 +163,15 @@ METACOG = config_handler.get_value("constants", "METACOG")
 ACK = config_handler.get_value("application_agreement", "ACK")
 PROTOTYPE = config_handler.get_value("constants", "PROTOTYPE")
 
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+SUBJECTS_LIST = config.get("menu_lists", "SUBJECTS_SINGAPORE")
+SUBJECTS_SINGAPORE = ast.literal_eval(SUBJECTS_LIST)
+PRI_LEVELS = [f"Primary {i}" for i in range(1, 7)]
+SEC_LEVELS = [f"Secondary {i}" for i in range(1, 6)]
+JC_LEVELS = [f"Junior College {i}" for i in range(1, 4)]
+EDUCATION_LEVELS = PRI_LEVELS + SEC_LEVELS + JC_LEVELS
 
 def is_function_disabled(function_name):
     # st.write("Function name: ", function_name)
@@ -686,8 +696,8 @@ def main():
                     st.session_state.chatbot_index = 0
                     container.empty()
                     st.rerun()
+                    
                 if st.session_state.lesson_col_prompt:
-                    # st.write("I am here", st.session_state.lesson_col_prompt)
                     lesson_bot(
                         st.session_state.lesson_col_prompt,
                         st.session_state.lesson_collaborator,
@@ -696,19 +706,8 @@ def main():
                     lesson_design_options()
 
         elif st.session_state.option == "Lesson Commentator":
-            st.session_state.start = 5
-            st.subheader(f":green[{st.session_state.option}]")
-            container1 = st.container()
-
-            with container1:
-                # on = sac.buttons([sac.ButtonsItem(label=f"Continue Conversation at {LESSON_BOT}", color='#40826D')], format_func='title', index=None, size='small',type='primary')
-                st.session_state.lesson_col_prompt = lesson_commentator()
-                on = sac.switch(
-                    label=f"Continue Conversation at {LESSON_BOT}",
-                    value=False,
-                    align="start",
-                    position="left",
-                )
+            lesson_commentator()
+            
         elif st.session_state.option == "Lesson Designer Map":
             st.subheader(f":green[{st.session_state.option}]")
             lesson_map_generator()
