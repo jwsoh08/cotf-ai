@@ -230,8 +230,8 @@ def display_accounts(school_id):
         "Username",
         "Profile",
         "School",
+	"Class",
         "Level",
-        "Class",
         "Organisation",
     ]
     df = pd.DataFrame(users, columns=columns)
