@@ -51,11 +51,10 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
+
 
 def set_function_access_for_user(user_id):
     """
@@ -321,10 +320,10 @@ def update_prompt_template(profile_id, templates):
 
         selected_school_id = None
         if profile_id == SA:
-            # Fetch all schools
+           
             cursor.execute("SELECT school_id, school_name FROM Schools")
             schools = cursor.fetchall()
-            # Check if there are no schools and exit if true
+            
             if not schools:
                 st.error("No schools available")
                 return
@@ -336,22 +335,17 @@ def update_prompt_template(profile_id, templates):
         elif profile_id == AD:
             selected_school_id = st.session_state.user["school_id"]
 
-        # Fetch profiles except SA and AD
         cursor.execute(
-            "SELECT profile_id, profile_name FROM Profile WHERE profile_id NOT IN (?, ?)",
-            (SA, AD),
+            "SELECT profile_id, profile_name FROM Profile WHERE profile_id NOT IN (?)",
+            (SA,),
         )
         profiles = cursor.fetchall()
         profile_choices = {profile[1]: profile[0] for profile in profiles}
-        # profile_choices["All Users"] = None  # Add "All Users" option
-        # selected_profile_name = st.selectbox("Select Profile (Excludes SA & AD):", list(profile_choices.keys()))
+        
         multiselect_profile_names = st.multiselect(
-            "Select Profiles (Excludes SA & AD):", list(profile_choices.keys())
+            "Select Profiles (Excludes SA):", list(profile_choices.keys())
         )
-        # selected_profile_id = multiselect_profile_names
-        # st.write("school id:", selected_school_id)
-        # st.write("profile id:", multiselect_profile_names)
-        # st.write("Profile choices:", profile_choices)
+
         btn_process = st.button("Update Templates for profile")
         st.divider()
         if btn_process:

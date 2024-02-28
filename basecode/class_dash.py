@@ -31,9 +31,7 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
 
@@ -190,12 +188,85 @@ def fetch_data_by_school(sch_id):
     return data_rows, data_column_names
 
 
+def fetch_conversations_with_chatbot(sch_id, class_id=None):
+    conn = sqlite3.connect(WORKING_DATABASE)
+    cursor = conn.cursor()
+
+    if class_id is not None:
+        # fetch student's conversation given the class_id
+        cursor.execute(
+            """
+                SELECT Users.username, 
+                    Data_Table.date,
+                    Data_Table.function_name,
+                    Data_Table.user_prompt,
+                    Data_Table.chatbot_ans
+                FROM Data_Table
+                JOIN Users ON Data_Table.user_id = Users.user_id
+                WHERE Users.class_id = ? AND Users.school_id = ?
+            """,
+            (
+                class_id,
+                sch_id,
+            ),
+        )
+
+    else:
+        # fetch all students's conversation
+        cursor.execute(
+            """
+                SELECT Users.username, Data_Table.* 
+                FROM Data_Table
+                JOIN Users ON Data_Table.user_id = Users.user_id
+                WHERE Users.school_id=?
+            """,
+            (sch_id,),
+        )
+
+    data = cursor.fetchall()
+    # hard coding column headers to customise them for better readability.
+    column_headers = [
+        "user name",
+        "timestamp",
+        "function",
+        "prompt",
+        "chatbot response",
+    ]
+    conn.close()
+
+    return data, column_headers
+
+
+def get_class_id_from_user(user_id):
+    conn = sqlite3.connect(WORKING_DATABASE)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+            SELECT class_id
+            FROM Users
+			WHERE user_id=?
+        """,
+        (user_id,),
+    )
+
+    data_rows = cursor.fetchall()
+    conn.close()
+
+    return data_rows[0][0]
+
+
 def download_data_table_csv(user_id, sch_id, profile):
     if profile == SA:  # super admin
         data, columns = fetch_data_by_sa(sch_id)
 
     elif profile == AD:  # administrator or super admin
         data, columns = fetch_data_by_school(sch_id)
+
+    elif profile == TCH:
+        class_id = get_class_id_from_user(user_id)
+        data, columns = fetch_conversations_with_chatbot(sch_id, class_id)
+
     else:
         data, columns = fetch_data_by_username(user_id)
 
@@ -223,8 +294,3 @@ def download_data_table_csv(user_id, sch_id, profile):
             file_name=filename,
             mime="text/csv",
         )
-
-
-# In your Streamlit app:
-# display_data()
-# download_data_table_csv()
