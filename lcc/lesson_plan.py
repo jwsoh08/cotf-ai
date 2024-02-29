@@ -2,7 +2,6 @@ import streamlit as st
 import streamlit_antd_components as sac
 import tempfile
 import configparser
-import ast
 import os
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.document_loaders import UnstructuredFileLoader
@@ -21,13 +20,9 @@ from lcc.k_mapp import generate_mindmap, output_mermaid_diagram
 config = configparser.ConfigParser()
 config.read("config.ini")
 
-SUBJECTS_LIST = config.get("menu_lists", "SUBJECTS_SINGAPORE")
-SUBJECTS_SINGAPORE = ast.literal_eval(SUBJECTS_LIST)
-PRI_LEVELS = [f"Primary {i}" for i in range(1, 7)]
-SEC_LEVELS = [f"Secondary {i}" for i in range(1, 6)]
-JC_LEVELS = [f"Junior College {i}" for i in range(1, 4)]
-EDUCATION_LEVELS = PRI_LEVELS + SEC_LEVELS + JC_LEVELS
 LESSON_COLLAB = config["constants"]["LESSON_COLLAB"]
+
+from settings import SUBJECTS_LIST, EDUCATION_LEVELS
 
 client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
@@ -67,23 +62,27 @@ def generator_rating():
 
 def metacog_bot(prompt, prompt_template, bot_name):
     try:
-        prompt_question = prompt['question']
-        prompt_text = prompt['text']
+        prompt_question = prompt["question"]
+        prompt_text = prompt["text"]
 
         if prompt:
             # st.write("I am inside", st.session_state.lesson_col_prompt)
             if "memory" not in st.session_state:
                 st.session_state.memory = ConversationBufferWindowMemory(k=5)
 
-            st.session_state.msg.append({"role": "user", "content": "Question: " + prompt_question})
-            st.session_state.msg.append({"role": "user", "content": "Text: "+ prompt_text})
+            st.session_state.msg.append(
+                {"role": "user", "content": "Question: " + prompt_question}
+            )
+            st.session_state.msg.append(
+                {"role": "user", "content": "Text: " + prompt_text}
+            )
 
             message_placeholder = st.empty()
 
             # check if there is any knowledge base
             if st.session_state.vs:
                 docs = st.session_state.vs.similarity_search(
-                    prompt_question+ " " +prompt_text
+                    prompt_question + " " + prompt_text
                 )
                 resources = docs[0].page_content
                 reference_prompt = f"""You may refer to this resources to improve or design the lesson
@@ -91,11 +90,13 @@ def metacog_bot(prompt, prompt_template, bot_name):
 									"""
             else:
                 reference_prompt = ""
-            
+
             full_response = ""
-            input_prompt = "question: "+prompt_question +", text: "+prompt_text
-            
-            for response in template_prompt(input_prompt, reference_prompt + prompt_template):
+            input_prompt = "question: " + prompt_question + ", text: " + prompt_text
+
+            for response in template_prompt(
+                input_prompt, reference_prompt + prompt_template
+            ):
                 full_response += response.choices[0].delta.content or ""
                 message_placeholder.markdown(full_response + "▌")
             if bot_name == LESSON_COLLAB:
@@ -159,9 +160,7 @@ def lesson_bot(prompt, prompt_template, bot_name):
 
             # check if there is any knowledge base
             if st.session_state.vs:
-                docs = st.session_state.vs.similarity_search(
-                    prompt
-                )
+                docs = st.session_state.vs.similarity_search(prompt)
                 resources = docs[0].page_content
                 reference_prompt = f"""You may refer to this resources to improve or design the lesson
 										{resources}
@@ -170,7 +169,6 @@ def lesson_bot(prompt, prompt_template, bot_name):
                 reference_prompt = ""
 
             full_response = ""
-
 
             for response in template_prompt(prompt, reference_prompt + prompt_template):
                 full_response += response.choices[0].delta.content or ""
@@ -243,17 +241,13 @@ def template_prompt(prompt, prompt_template):
 
 def lesson_collaborator():
     st.subheader("1. Basic Lesson Information for Generator")
-    subject = st.selectbox("Choose a Subject", SUBJECTS_SINGAPORE)
+    subject = st.selectbox("Choose a Subject", SUBJECTS_LIST)
     level = st.selectbox("Grade Level", EDUCATION_LEVELS)
-    # lessons = st.number_input(
-    # 	"Number of lessons/ periods", min_value=1.0, step=0.5, format='%.2f')
-    # duration = st.number_input(
-    # 	"How long is a period/ lesson (in minutes)", min_value=30, step=5, format='%i')
-    # total_duration = lessons * duration
     duration = st.text_input(
         "Duration (in minutes)",
         help="Estimated duration of one lesson or over a few lessons",
     )
+
     st.subheader("2. Lesson Details for Generator")
     topic = st.text_area(
         "Topic", help="Describe the specific topic or theme for the lesson"
@@ -261,9 +255,11 @@ def lesson_collaborator():
     skill_level = st.text_input(
         "Readiness Level", help="Beginner, Intermediate, Advanced ..."
     )
+
     st.subheader("3. Learners Information for Generator")
     prior_knowledge = st.text_area("Prior Knowledge")
     learners_info = st.text_input("Describe the learners for this lesson")
+
     st.subheader("4. Skills Application")
     kat_options = [
         "Support Assessment for Learning",
@@ -289,26 +285,16 @@ def lesson_collaborator():
     if st.checkbox(
         "I would like to incorporate certain lesson elements in my lesson plan"
     ):
+
         st.subheader("5. Lesson Structure")
         incorporate_elements = st.text_area(
             "Incoporate lesson elements (e.g. lesson should be fun and include pair work)",
             help="Describe lesson elements that you would like to have",
         )
-    # pedagogy = [" Blended Learning", "Concrete-Pictorial-Abstract",
-    # 			"Flipped Learning", "Others"]
-    # # Create the multiselect component
-    # selected_options = st.multiselect(
-    # 	"What teaching pedagogy will you use for your lesson ?", pedagogy)
-    # other_option = ''  # Initialize the variable
-    # Others probably should be a custom component - Kahhow to refactor down the line
-    # if "Others" in selected_options:
-    # 	other_option = st.text_input("Please specify the 'Other' option:")
-    # if other_option and "Others" in selected_options:  # Ensure "Others" exists before removing
-    # 	selected_options.remove("Others")
-    # 	selected_options.append(other_option)
+
     st.write(st.session_state.lesson_col_option)
     vectorstore_selection_interface(st.session_state.user["id"])
-    # if st.button("Submit for Feedback", key=1):
+
     st.session_state.lesson_col_option = sac.buttons(
         [
             sac.ButtonsItem(
@@ -418,8 +404,10 @@ def upload_lesson_plan():
         os.remove(temp_file_path)
         return docs
 
+
 def count_words(text):
     return len(text)
+
 
 def lesson_design_map(lesson_plan):
     """

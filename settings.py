@@ -61,3 +61,6 @@ SUBJECTS_LIST = [
     "Music (JC)",
     "Theatre Studies and Drama (JC)",
 ]
+
+# Bot names
+LESSON_BOT = "Lesson Collaborator (Chatbot)"
