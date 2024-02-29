@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit_antd_components as sac
 import tempfile
 import configparser
-import ast
+
 import os
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.document_loaders import UnstructuredFileLoader
@@ -21,13 +21,9 @@ from lcc.k_mapp import generate_mindmap, output_mermaid_diagram
 config = configparser.ConfigParser()
 config.read("config.ini")
 
-SUBJECTS_LIST = config.get("menu_lists", "SUBJECTS_SINGAPORE")
-SUBJECTS_SINGAPORE = ast.literal_eval(SUBJECTS_LIST)
-PRI_LEVELS = [f"Primary {i}" for i in range(1, 7)]
-SEC_LEVELS = [f"Secondary {i}" for i in range(1, 6)]
-JC_LEVELS = [f"Junior College {i}" for i in range(1, 4)]
-EDUCATION_LEVELS = PRI_LEVELS + SEC_LEVELS + JC_LEVELS
 LESSON_COLLAB = config["constants"]["LESSON_COLLAB"]
+
+from settings import SUBJECTS_LIST, EDUCATION_LEVELS
 
 client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
@@ -243,13 +239,9 @@ def template_prompt(prompt, prompt_template):
 
 def lesson_collaborator():
     st.subheader("1. Basic Lesson Information for Generator")
-    subject = st.selectbox("Choose a Subject", SUBJECTS_SINGAPORE)
+    subject = st.selectbox("Choose a Subject", SUBJECTS_LIST)
     level = st.selectbox("Grade Level", EDUCATION_LEVELS)
-    # lessons = st.number_input(
-    # 	"Number of lessons/ periods", min_value=1.0, step=0.5, format='%.2f')
-    # duration = st.number_input(
-    # 	"How long is a period/ lesson (in minutes)", min_value=30, step=5, format='%i')
-    # total_duration = lessons * duration
+
     duration = st.text_input(
         "Duration (in minutes)",
         help="Estimated duration of one lesson or over a few lessons",
@@ -294,21 +286,10 @@ def lesson_collaborator():
             "Incoporate lesson elements (e.g. lesson should be fun and include pair work)",
             help="Describe lesson elements that you would like to have",
         )
-    # pedagogy = [" Blended Learning", "Concrete-Pictorial-Abstract",
-    # 			"Flipped Learning", "Others"]
-    # # Create the multiselect component
-    # selected_options = st.multiselect(
-    # 	"What teaching pedagogy will you use for your lesson ?", pedagogy)
-    # other_option = ''  # Initialize the variable
-    # Others probably should be a custom component - Kahhow to refactor down the line
-    # if "Others" in selected_options:
-    # 	other_option = st.text_input("Please specify the 'Other' option:")
-    # if other_option and "Others" in selected_options:  # Ensure "Others" exists before removing
-    # 	selected_options.remove("Others")
-    # 	selected_options.append(other_option)
+
     st.write(st.session_state.lesson_col_option)
     vectorstore_selection_interface(st.session_state.user["id"])
-    # if st.button("Submit for Feedback", key=1):
+
     st.session_state.lesson_col_option = sac.buttons(
         [
             sac.ButtonsItem(
@@ -421,83 +402,6 @@ def upload_lesson_plan():
 
 def count_words(text):
     return len(text)
-
-
-def lesson_commentator():
-    st.subheader("1. Basic Lesson Information for Feedback")
-    subject = st.selectbox("Choose a Subject", SUBJECTS_SINGAPORE)
-    level = st.selectbox("Choose a level", EDUCATION_LEVELS)
-    duration = st.text_input(
-        "Duration (in minutes)",
-        help="Estimated duration of one lesson or over a few lessons",
-    )
-
-    st.subheader("2. Lesson Details for Feedback")
-    topic = st.text_area(
-        "Topic", help="Describe the specific topic or theme for the lesson"
-    )
-    skill_level = st.text_input(
-        "Readiness Level", help="Beginner, Intermediate, Advanced ..."
-    )
-
-    st.subheader("3. Lesson Plan upload or key in manually")
-    lesson_plan_content = upload_lesson_plan()
-    if lesson_plan_content is not None and lesson_plan_content != "":
-        if count_words(lesson_plan_content) > 6000:
-            st.error(
-                "Your lesson plan is too long. Please shorten it to 6000 chars or less."
-            )
-            return
-
-    lesson_plan = st.text_area(
-        "Please provide your lesson plan either upload or type into this text box (Max 6000 characters), including details such as learning objectives, activities, assessment tasks, and any use of educational technology tools.",
-        height=500,
-        max_chars=6000,
-        value=lesson_plan_content,
-    )
-
-    st.subheader("4. Specific questions that I would like feedback on")
-    feedback = st.text_area(
-        "Include specific information from your lesson plan that you want feedback on."
-    )
-
-    st.subheader("5. Learners Profile")
-    learners_info = st.text_input("Describe the learners for this lesson ")
-
-    vectorstore_selection_interface(st.session_state.user["id"])
-    build = sac.buttons(
-        [
-            sac.ButtonsItem(label="Feedback", icon="check-circle-fill", color="green"),
-            sac.ButtonsItem(label="Cancel", icon="x-circle-fill", color="red"),
-        ],
-        label=None,
-        index=None,
-        format_func="title",
-        align="center",
-        position="top",
-        size="default",
-        direction="horizontal",
-        shape="round",
-        type="default",
-        compact=False,
-    )
-
-    if build == "Feedback":
-        feedback_template = f"""Imagine you are an experienced teacher. I'd like feedback on the lesson I've uploaded:
-			Subject: {subject}
-			Topic: {topic}
-			Level: {level}
-			Duration: {duration} minutes
-			Skill Level: {skill_level}
-			Lesson Plan Content: {lesson_plan}
-			Specific Feedback Areas: {feedback}
-			Description of Learners: {learners_info}
-			Please provide feedback to enhance this lesson plan."""
-        st.success("Your lesson plan has been submitted for feedback!")
-        return feedback_template
-
-    else:
-        return False
 
 
 def lesson_design_map(lesson_plan):
