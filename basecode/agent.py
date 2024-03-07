@@ -17,13 +17,14 @@ from langchain.utilities import WikipediaAPIWrapper
 from langchain.agents import tool
 import json
 
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 import configparser
 
 config = configparser.ConfigParser()
 config.read("config.ini")
 # Check application environment => GCC or Streamlit
 ENV = config["constants"]["prototype_env"]
+
 
 # smart agents accessing the internet for free
 # https://github.com/langchain-ai/streamlit-agent/blob/main/streamlit_agent/search_and_chat.py

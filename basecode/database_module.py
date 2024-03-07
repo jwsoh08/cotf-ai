@@ -6,7 +6,7 @@ import os
 import zipfile
 import boto3
 import configparser
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 
 # if "S3_BUCKET" in st.secrets:
 #     S3_BUCKET = SecretsManager.get_secret("S3_BUCKET")
@@ -35,11 +35,10 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
+
 
 def delete_tables():
     # Connect to the SQLite database
@@ -302,7 +301,9 @@ def upload_to_s3(file_name, bucket, s3_file_name):
             "s3",
             region_name=SecretsManager.get_secret("AWS")["AWS_DEFAULT_REGION"],
             aws_access_key_id=SecretsManager.get_secret("AWS")["AWS_ACCESS_KEY_ID"],
-            aws_secret_access_key=SecretsManager.get_secret("AWS")["AWS_SECRET_ACCESS_KEY"],
+            aws_secret_access_key=SecretsManager.get_secret("AWS")[
+                "AWS_SECRET_ACCESS_KEY"
+            ],
         )
         s3.upload_file(file_name, bucket, s3_file_name)
     else:
@@ -322,7 +323,9 @@ def download_from_s3(bucket, s3_file_name, local_file_name):
             "s3",
             region_name=SecretsManager.get_secret("AWS")["AWS_DEFAULT_REGION"],
             aws_access_key_id=SecretsManager.get_secret("AWS")["AWS_ACCESS_KEY_ID"],
-            aws_secret_access_key=SecretsManager.get_secret("AWS")["AWS_SECRET_ACCESS_KEY"],
+            aws_secret_access_key=SecretsManager.get_secret("AWS")[
+                "AWS_SECRET_ACCESS_KEY"
+            ],
         )
         s3.download_file(bucket, s3_file_name, local_file_name)
     else:
@@ -333,6 +336,7 @@ def download_from_s3(bucket, s3_file_name, local_file_name):
             aws_secret_access_key=st.secrets["AWS"]["AWS_SECRET_ACCESS_KEY"],
         )
         s3.download_file(bucket, s3_file_name, local_file_name)
+
 
 def upload_s3_database():
     if st.button("Upload Database to S3"):

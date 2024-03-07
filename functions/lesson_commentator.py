@@ -1,11 +1,14 @@
 import streamlit as st
+import streamlit_antd_components as sac
+from langchain.memory import ConversationBufferWindowMemory
 
 from basecode.users_module import vectorstore_selection_interface
 from lcc.lesson_plan import upload_lesson_plan
 
 from services.openai import ChatGPT
 
-from settings import EDUCATION_LEVELS, SUBJECTS_LIST
+from settings import EDUCATION_LEVELS, SUBJECTS_LIST, LESSON_COMMENT, LESSON_BOT
+
 
 def lesson_commentator():
     st.session_state.start = 5
@@ -57,6 +60,11 @@ def lesson_commentator():
 
     vectorstore_selection_interface(st.session_state.user["id"])
 
+    prompt = ""
+    kb_prompt = ""
+    response = ""
+
+    container = st.container()
     if submitted := st.button(label="Provide Feedback", type="secondary"):
         # collect inputs in form
         prompt = f"""
@@ -72,9 +80,8 @@ def lesson_commentator():
         Description of Learners: {learners_info}  
         Please provide feedback to enhance this lesson plan."""
 
-
         # check if a knowledge base is selected
-        kb_prompt = ""
+
         if st.session_state.vs:
             docs = st.session_state.vs.similarity_search(prompt)
             resources = docs[0].page_content
@@ -94,9 +101,7 @@ def lesson_commentator():
             {"role": "user", "content": prompt + kb_prompt},
         ]
 
-        response = ""
-
-        with st.container():
+        with container:
             response = st.write_stream(chatgpt.chat_completions(messages, True))
 
         # save history in conversation
@@ -112,3 +117,32 @@ def lesson_commentator():
                 "content": response,
             }
         )
+
+    on = sac.switch(
+        label=f"Continue Conversation at {LESSON_COMMENT}",
+        value=False,
+        align="start",
+        position="left",
+    )
+
+    if on:
+        # activate Lesson Collaborator (Chatbot) screen
+        st.session_state.start = 3
+        st.session_state.option = LESSON_BOT
+        st.session_state.chatbot = st.session_state.collaborator_mode
+        st.session_state.chatbot_index = 0
+
+        # retrieve history and save them to bot's memory for further processing
+        # on Lesson Collaborator (Chatbot)
+        prompt = st.session_state.msg[-2]["content"]
+        response = st.session_state.msg[-1]["content"]
+
+        if "memory" not in st.session_state:
+            st.session_state.memory = ConversationBufferWindowMemory(
+                k=st.session_state.k_memory
+            )
+
+        st.session_state["memory"].save_context({"input": prompt}, {"output": response})
+
+        container.empty()
+        st.rerun()

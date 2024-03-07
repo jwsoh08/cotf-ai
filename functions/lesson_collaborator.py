@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit_antd_components as sac
 
+
 from basecode.users_module import vectorstore_selection_interface
 from basecode.main_bot import (
     clear_session_states,
@@ -33,6 +34,7 @@ def lesson_collaborator_chatbot():
         size="small",
         type="default",
     )
+
     sac.divider(
         label="Chabot Settings",
         icon="robot",

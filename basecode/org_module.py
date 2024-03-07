@@ -8,10 +8,11 @@ import configparser
 import os
 import ast
 
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 
 config = configparser.ConfigParser()
 config.read("config.ini")
+
 
 class ConfigHandler:
     def __init__(self):
@@ -26,6 +27,7 @@ class ConfigHandler:
         except (SyntaxError, ValueError):
             # If not a data structure, return the plain string
             return value
+
 
 config_handler = ConfigHandler()
 
@@ -43,7 +45,7 @@ else:
     STU_PASS = st.secrets["student_password"]
     TCH_PASS = st.secrets["teacher_password"]
 
-DEFAULT_TEXT = config_handler.get_config_values("constants", "DEFAULT_TEXT")
+DEFAULT_PROMPT = config_handler.get_config_values("constants", "DEFAULT_PROMPT")
 STK_PROMPT_TEMPLATES = config_handler.get_config_values(
     "menu_lists", "STK_PROMPT_TEMPLATES"
 )
@@ -56,7 +58,7 @@ ALL_ORG = config_handler.get_config_values("constants", "ALL_ORG")
 MODE = config_handler.get_config_values("constants", "MODE")
 SCH_PROFILES = config_handler.get_config_values("menu_lists", "SCH_PROFILES")
 EDU_ORGS = config_handler.get_config_values("menu_lists", "EDU_ORGS")
-MENU_FUNCS = config_handler.get_config_values("menu_lists", "MENU_FUNCS")
+FUNC_DESCRIPTIONS = config_handler.get_config_values("menu_lists", "FUNC_DESCRIPTIONS")
 
 
 # Create or check for the 'database' directory in the current working directory
@@ -75,11 +77,10 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
+
 
 def has_at_least_two_rows():
     # Connect to the SQLite database
@@ -110,10 +111,10 @@ def initialise_admin_account():
         cursor.execute("SELECT COUNT(*) FROM App_Functions")
         count = cursor.fetchone()[0]
         if count == 0:
-            populate_functions(MENU_FUNCS)
+            populate_functions(FUNC_DESCRIPTIONS)
         if admin_account_exists:
             return
-        # populate_functions(MENU_FUNCS)
+        # populate_functions(FUNC_DESCRIPTIONS)
         # Insert organizations into the Organizations table and retrieve their IDs
         org_ids = {}
         for org in EDU_ORGS:
@@ -230,7 +231,7 @@ def display_accounts(school_id):
         "Username",
         "Profile",
         "School",
-	"Class",
+        "Class",
         "Level",
         "Organisation",
     ]

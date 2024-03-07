@@ -13,7 +13,7 @@ import os
 import pytz
 from Markdown2docx import Markdown2docx
 
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 
 client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
@@ -26,7 +26,7 @@ config.read("config.ini")
 NEW_PLAN = config["constants"]["NEW_PLAN"]
 FEEDBACK_PLAN = config["constants"]["FEEDBACK_PLAN"]
 PERSONAL_PROMPT = config["constants"]["PERSONAL_PROMPT"]
-DEFAULT_TEXT = config["constants"]["DEFAULT_TEXT"]
+DEFAULT_PROMPT = config["constants"]["DEFAULT_PROMPT"]
 
 # Create or check for the 'database' directory in the current working directory
 cwd = os.getcwd()
@@ -47,11 +47,10 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
+
 
 def set_chat_prompts(dict_buttons, key):
     # Extract values from the dictionary and store in a list
@@ -179,12 +178,13 @@ def insert_into_data_table(
     # Get the current time in UTC
     current_time_utc = datetime.utcnow()
     # Specify the Singapore timezone
-    singapore_timezone = pytz.timezone('Asia/Singapore')
+    singapore_timezone = pytz.timezone("Asia/Singapore")
     # Convert UTC time to Singapore time
-    current_time_singapore = current_time_utc.replace(tzinfo=pytz.utc).astimezone(singapore_timezone)
+    current_time_singapore = current_time_utc.replace(tzinfo=pytz.utc).astimezone(
+        singapore_timezone
+    )
     # Format the current time in Singapore time
     formatted_time_singapore = current_time_singapore.strftime("%Y-%m-%d %H:%M:%S")
-
 
     # Insert data into Data_Table using preloaded session state value
     cursor.execute(
@@ -220,7 +220,6 @@ def clear_session_states():
 # below ------------------------------ QA  base bot , K=2 memory for short term memory---------------------------------------------
 # using the query from lanceDB and vector store , combine with memory
 def memory_buffer_qa_component(prompt):
-    # st.write(type(st.session_state.vs))
     if st.session_state.vs:
         docs = st.session_state.vs.similarity_search(prompt)
         resource = docs[0].page_content
@@ -229,9 +228,8 @@ def memory_buffer_qa_component(prompt):
         st.session_state.memory = ConversationBufferWindowMemory(
             k=st.session_state.k_memory
         )
-    mem = st.session_state.memory.load_memory_variables({})
-    
-    
+
+    conversation_history = st.session_state.memory.load_memory_variables({})
     selected_prompt = st.session_state.chatbot
 
     if st.session_state.option == "Lesson Collaborator (Chatbot)":
@@ -263,7 +261,7 @@ def memory_buffer_qa_component(prompt):
 						{resource}
 						{source}
 						History of conversation:
-						{mem}
+						{conversation_history['history']}
 						You must quote the source of the Search Result if you are using the search result as part of the answer"""
     )
 
@@ -275,6 +273,7 @@ def chat_completion_qa_memory(prompt):
     openai.api_key = return_api_key()
     os.environ["OPENAI_API_KEY"] = return_api_key()
     prompt_template = memory_buffer_qa_component(prompt)
+    print(prompt_template)
     response = client.chat.completions.create(
         model=st.session_state.openai_model,
         messages=[
@@ -304,7 +303,7 @@ def basebot_qa_memory(bot_name):
         st.session_state.msg = [
             {"role": "assistant", "content": help_str},
         ]
-    # lesson collaborator
+    # populate messages
     for message in st.session_state.msg:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
@@ -312,12 +311,16 @@ def basebot_qa_memory(bot_name):
     try:
         if prompt := st.chat_input("Enter your query"):
             st.session_state.msg.append({"role": "user", "content": prompt})
+            # write user input on screen
             with st.chat_message("user"):
                 st.markdown(prompt)
 
+            # write bot input on screen
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
                 full_response = ""
+
+                # get response from bot using memory
                 for response in chat_completion_qa_memory(prompt):
                     full_response += response.choices[0].delta.content or ""
                     message_placeholder.markdown(full_response + "▌")
@@ -363,7 +366,6 @@ def memory_buffer_component():
     mem = st.session_state.memory.load_memory_variables({})
     # For more customisation, this can be in the config.ini file
 
-
     selected_prompt = st.session_state.chatbot
 
     if st.session_state.option == "Lesson Collaborator (Chatbot)":
@@ -387,9 +389,8 @@ def memory_buffer_component():
     if st.session_state.option == "AI Chatbot":
         selected_prompt = st.session_state.chatbot
 
-
     prompt_template = (
-         selected_prompt
+        selected_prompt
         + f""" 
 						History of conversation:
 						{mem}"""

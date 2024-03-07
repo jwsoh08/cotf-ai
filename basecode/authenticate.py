@@ -9,7 +9,7 @@ import os
 import ast
 
 
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 
 
 class ConfigHandler:
@@ -53,9 +53,7 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
 

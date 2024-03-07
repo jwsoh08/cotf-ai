@@ -15,8 +15,9 @@ import configparser
 import ast
 import json
 
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 from openai import OpenAI
+
 
 class ConfigHandler:
     def __init__(self):
@@ -59,9 +60,7 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
 
@@ -292,10 +291,8 @@ def create_lancedb_table(embeddings, meta, table_name):
 
     client = OpenAI()
     response = client.embeddings.create(
-        input="Query Unsuccessful",
-        model="text-embedding-3-small"
+        input="Query Unsuccessful", model="text-embedding-3-small"
     )
-
 
     table = db.create_table(
         f"{table_name}",
@@ -518,7 +515,9 @@ def load_vectorstore(documents, table_name):
     retrieved_docs_dicts = json.loads(documents)
     retrieved_docs = [dict_to_document(doc_dict) for doc_dict in retrieved_docs_dicts]
     vs = LanceDB.from_documents(
-        retrieved_docs, OpenAIEmbeddings(openai_api_key=return_api_key()), connection=db.open_table(f"{table_name}")
+        retrieved_docs,
+        OpenAIEmbeddings(openai_api_key=return_api_key()),
+        connection=db.open_table(f"{table_name}"),
     )
     return vs
 

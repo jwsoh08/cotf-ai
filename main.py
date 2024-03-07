@@ -1,6 +1,10 @@
+# load environment variables as early as possible in your script
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # No need SQLite
-import configparser
-import ast
+import os
 import nltk
 import streamlit as st
 
@@ -23,7 +27,7 @@ from basecode.kb_module import (
     create_vectorstore,
     delete_vectorstores,
 )
-from basecode.authenticate import login_function, check_password
+from basecode.authenticate import login_function
 from basecode.class_dash import download_data_table_csv
 
 # New schema move function fom settings
@@ -84,15 +88,24 @@ from lcc.lesson_plan import (
     lesson_map_generator,
 )
 
-
+from utilities.session_state import initialise_session_state
 from functions.lesson_commentator import lesson_commentator
 from functions.lesson_collaborator import lesson_collaborator_chatbot
 
-from basecode.services.aws import SecretsManager
 
-from dotenv import load_dotenv
-
-load_dotenv()  # take environment variables from .env.
+from settings import (
+    SA,
+    AD,
+    FUNC_DESCRIPTIONS,
+    META_BOT,
+    AI_BOT,
+    LESSON_BOT,
+    LESSON_COLLAB,
+    REFLECTIVE,
+    METACOG,
+    ACK,
+    DEFAULT_DB,
+)
 
 
 def download_nltk_data_if_absent(package_name):
@@ -107,73 +120,11 @@ def download_nltk_data_if_absent(package_name):
 download_nltk_data_if_absent("punkt")
 
 
-class ConfigHandler:
-    def __init__(self):
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
-
-    def get_value(self, section, key):
-        value = self.config.get(section, key)
-        try:
-            # Convert string value to a Python data structure
-            return ast.literal_eval(value)
-        except (SyntaxError, ValueError):
-            # If not a data structure, return the plain string
-            return value
-
-
-# Initialization
-config_handler = ConfigHandler()
-
 # Setting Streamlit configurations
 st.set_page_config(layout="wide")
 
-# Check application environment => GCC or Streamlit
-ENV = config_handler.get_value("constants", "prototype_env")
-
-if ENV == "GCC":
-    # Fetching secrets from AWS Secrets Manager
-    DEFAULT_TITLE = SecretsManager.get_secret("default_title")
-    SUPER_PWD = SecretsManager.get_secret("super_admin_password")
-    SUPER = SecretsManager.get_secret("super_admin")
-    DEFAULT_DB = SecretsManager.get_secret("default_db")
-else: 
-    DEFAULT_TITLE = st.secrets["default_title"]
-    SUPER_PWD = st.secrets["super_admin_password"]
-    SUPER = st.secrets["super_admin"]
-    DEFAULT_DB = st.secrets["default_db"]
-
-# Fetching values from config.ini
-DEFAULT_TEXT = config_handler.get_value("constants", "DEFAULT_TEXT")
-TCH = config_handler.get_value("constants", "TCH")
-STU = config_handler.get_value("constants", "STU")
-SA = config_handler.get_value("constants", "SA")
-AD = config_handler.get_value("constants", "AD")
-COTF = config_handler.get_value("constants", "COTF")
-META = config_handler.get_value("constants", "META")
-PANDAI = config_handler.get_value("constants", "PANDAI")
-MENU_FUNCS = config_handler.get_value("menu_lists", "MENU_FUNCS")
-META_BOT = config_handler.get_value("constants", "META_BOT")
-QA_BOT = config_handler.get_value("constants", "QA_BOT")
-AI_BOT = config_handler.get_value("constants", "AI_BOT")
-LESSON_BOT = config_handler.get_value("constants", "LESSON_BOT")
-LESSON_COLLAB = config_handler.get_value("constants", "LESSON_COLLAB")
-LESSON_COMMENT = config_handler.get_value("constants", "LESSON_COMMENT")
-LESSON_MAP = config_handler.get_value("constants", "LESSON_MAP")
-REFLECTIVE = config_handler.get_value("constants", "REFLECTIVE")
-CONVERSATION = config_handler.get_value("constants", "CONVERSATION")
-MINDMAP = config_handler.get_value("constants", "MINDMAP")
-METACOG = config_handler.get_value("constants", "METACOG")
-ACK = config_handler.get_value("application_agreement", "ACK")
-PROTOTYPE = config_handler.get_value("constants", "PROTOTYPE")
-
-config = configparser.ConfigParser()
-config.read("config.ini")
-
 
 def is_function_disabled(function_name):
-    # st.write("Function name: ", function_name)
-    # st.write("Function options: ", st.session_state.func_options.get(function_name, True))
     return st.session_state.func_options.get(function_name, True)
 
 
@@ -182,13 +133,19 @@ def return_function_name(function_name, default_name=""):
         return "-"
     else:
         if default_name == "":
+            if os.environ["PROTOTYPE"] == "LCC" and function_name == "AI Chatbot":
+                return "Lesson Resource Generator"
+
             return function_name
+
         else:
             return default_name
 
 
-def initialize_session_state(menu_funcs, default_value):
-    st.session_state.func_options = {key: default_value for key in menu_funcs.keys()}
+def initialize_session_state(FUNC_DESCRIPTIONS, default_value):
+    st.session_state.func_options = {
+        key: default_value for key in FUNC_DESCRIPTIONS.keys()
+    }
 
 
 def render_main_header():
@@ -208,159 +165,35 @@ def render_main_header():
     else:
         st.title(st.session_state.title_page)
 
+
 def main():
     try:
-        if "title_page" not in st.session_state:
-            st.session_state.title_page = DEFAULT_TITLE
-
-        if "api_key" not in st.session_state:
-            st.session_state.api_key = ""
-
-        if "option" not in st.session_state:
-            st.session_state.option = False
-
-        if "login" not in st.session_state:
-            st.session_state.login = False
-
-        if "user" not in st.session_state:
-            st.session_state.user = None
-
-        if "start" not in st.session_state:
-            st.session_state.start = 0
-
-        if "openai_model" not in st.session_state:
-            if ENV == "GCC":
-                st.session_state.openai_model = SecretsManager.get_secret("default_model")
-            else:
-                st.session_state.openai_model = st.secrets["default_model"]
-
-        if "msg" not in st.session_state:
-            st.session_state.msg = []
-
-        if "rating" not in st.session_state:
-            st.session_state.rating = False
-
-        if "lesson_plan" not in st.session_state:
-            st.session_state.lesson_plan = ""
-
-        if "temp" not in st.session_state:
-            if ENV == "GCC":
-                st.session_state.temp = int(SecretsManager.get_secret("default_temp"))
-            else:
-                st.session_state.temp = int(st.secrets["default_temp"])
-
-        if "acknowledgement" not in st.session_state:
-            st.session_state.acknowledgement = False
-
-        if "frequency_penalty" not in st.session_state:
-            if ENV == "GCC":
-                st.session_state.frequency_penalty = int(
-                    SecretsManager.get_secret("default_frequency_penalty")
-                )
-            else:
-                st.session_state.frequency_penalty = int(
-                    st.secrets["default_frequency_penalty"]
-                )
-
-        if "presence_penalty" not in st.session_state:
-            if ENV == "GCC":
-                st.session_state.presence_penalty = int(
-                    SecretsManager.get_secret("default_presence_penalty")
-                )
-            else:
-                st.session_state.presence_penalty = int(
-                    st.secrets["default_presence_penalty"]
-                )
-
-        if "k_memory" not in st.session_state:
-            if ENV == "GCC":
-                st.session_state.k_memory = int(
-                    SecretsManager.get_secret("default_k_memory")
-                )
-            else:
-                st.session_state.k_memory = int(
-                    st.secrets["default_k_memory"]
-                )
-
-        if "memoryless" not in st.session_state:
-            st.session_state.memoryless = False
-
-        if "vs" not in st.session_state:
-            st.session_state.vs = False
-
-        if "visuals" not in st.session_state:
-            st.session_state.visuals = False
-
-        if "svg_height" not in st.session_state:
-            st.session_state["svg_height"] = 1000
-
-        if "current_model" not in st.session_state:
-            st.session_state.current_model = "No KB loaded"
-
-        if "func_options" not in st.session_state:
-            st.session_state.func_options = {}
-            initialize_session_state(MENU_FUNCS, True)
-
-        if "tools" not in st.session_state:
-            st.session_state.tools = []
-
-        if "lesson_col_prompt" not in st.session_state:
-            st.session_state.lesson_col_prompt = False
-
-        if "lesson_col_option" not in st.session_state:
-            st.session_state.lesson_col_option = "Cancel"
-
-        if "generated_flag" not in st.session_state:
-            st.session_state.generated_flag = False
-
-        if "button_text" not in st.session_state:
-            st.session_state.button_text = "Cancel"
-
-        if "data_doc" not in st.session_state:
-            st.session_state.data_doc = ""
-
-        if "download_response_flag" not in st.session_state:
-            st.session_state.download_response_flag = False
-
-        if "chatbot_index" not in st.session_state:
-            st.session_state.chatbot_index = 1
-
-        if "chat_response" not in st.session_state:
-            st.session_state.chat_response = ""
-
-        # useful session state variables for testing and debugging
-        # not in use for production
-        if "test1" not in st.session_state:
-            st.session_state.test1 = ""
-
-        if "test2" not in st.session_state:
-            st.session_state.test2 = ""
-
-        # These functions below will create the initial database and administator account
+        initialise_session_state()
         create_dbs()
         initialise_admin_account()
 
-        # PLEASE REMOVE THIS or COMMENT IT
-        # st.write("User Profile: ", st.session_state.user)
-
-        # PLEASE REMOVE ABOVE
-        with st.sidebar:  # options for sidebar
+        # sidebar navigation
+        with st.sidebar:
             if st.session_state.login == False:
-                st.image("app_logo/cotf_logo.png")
+
+                st.image("assets/cotf_logo.png")
                 st.session_state.option = menu([MenuItem("Users login", icon="people")])
+
             else:
-                # can do a test if user is school is something show a different logo and set a different API key
-                # super admin login feature
+
                 if st.session_state.user["profile_id"] == SA:
-                    # Initialize the session state for function options
-                    initialize_session_state(MENU_FUNCS, False)
+
+                    # currently when we set a menu func option to false,
+                    # we are enabling it.
+                    initialize_session_state(FUNC_DESCRIPTIONS, False)
+
                 else:
+
                     if st.session_state.acknowledgement == False:
-                        initialize_session_state(MENU_FUNCS, True)
+                        initialize_session_state(FUNC_DESCRIPTIONS, True)
                     else:
                         set_function_access_for_user(st.session_state.user["id"])
-                        # st.write("Function options: ", st.session_state.func_options)
-                    # Using the is_function_disabled function for setting the `disabled` attribute
+
                 st.session_state.option = sac.menu(
                     [
                         sac.MenuItem(
@@ -372,7 +205,6 @@ def main():
                                     icon="person-circle",
                                     disabled=is_function_disabled("Personal Dashboard"),
                                 ),
-                                # sac.MenuItem('Class Dashboard', icon='clipboard-data', disabled=is_function_disabled('Class Dashboard')),
                             ],
                         ),
                         sac.MenuItem(
@@ -406,16 +238,6 @@ def main():
                                     icon="chat-left-dots",
                                     disabled=is_function_disabled("Lesson Commentator"),
                                 ),
-                                # Jun Wen: Hiding this menu item as advised by Joe.
-                                # sac.MenuItem(
-                                #     return_function_name(
-                                #         "Lesson Designer Map", "Lesson Designer Map"
-                                #     ),
-                                #     icon="diagram-2",
-                                #     disabled=is_function_disabled(
-                                #         "Lesson Designer Map"
-                                #     ),
-                                # ),
                             ],
                         ),
                         sac.MenuItem(
@@ -545,7 +367,7 @@ def main():
                 st.subheader(
                     "Acknowledgement on the use of Generative AI with Large Language Models"
                 )
-                initialize_session_state(MENU_FUNCS, True)
+                initialize_session_state(FUNC_DESCRIPTIONS, True)
                 st.write(ACK)
                 ack = st.checkbox("I acknowledge the above information")
                 if ack:
@@ -557,11 +379,8 @@ def main():
                     st.warning(
                         "Please acknowledge the above information before you proceed"
                     )
-                    initialize_session_state(MENU_FUNCS, True)
+                    initialize_session_state(FUNC_DESCRIPTIONS, True)
                     st.stop()
-                pass
-            with col2:
-                pass
 
         # Personal Dashboard
         elif st.session_state.option == "Personal Dashboard":
@@ -584,6 +403,7 @@ def main():
             vectorstore_selection_interface(st.session_state.user["id"])
 
         elif st.session_state.option == "Lesson Collaborator (Chatbot)":
+            st.session_state.start = 3
             lesson_collaborator_chatbot()
 
         elif st.session_state.option == "Lesson Collaborator (Scaffolded)":
@@ -654,53 +474,6 @@ def main():
         # Thinking Facilitator
         elif st.session_state.option == "Thinking Facilitator (Chatbot)":
             st.subheader(f":green[{st.session_state.option}]")
-
-            # Jun Wen: Options (Conversation, Default and Paragraph) were asked to
-            # be removed by Joe.
-
-            # Metacog settings
-            # Hide chatbot setting
-            # with st.expander("Thinking Facilitator Settings"):
-            #     vectorstore_selection_interface(st.session_state.user["id"])
-
-            #     if st.session_state.vs:
-            #         vs_flag = False
-            #     else:
-            #         vs_flag = True
-
-            #     options = sac.chip(
-            #         items=[
-            #             sac.ChipItem(
-            #                 label="Raw Search", icon="search", disabled=vs_flag
-            #             ),
-            #             sac.ChipItem(label="Enable Memory", icon="memory"),
-            #             sac.ChipItem(label="Capture Responses", icon="camera-fill"),
-            #             sac.ChipItem(label="Download Responses", icon="download"),
-            #         ],
-            #         index=[1, 2],
-            #         format_func="title",
-            #         radius="sm",
-            #         size="sm",
-            #         align="left",
-            #         variant="light",
-            #         multiple=True,
-            #     )
-
-            #     # Update state based on new chip selections
-            #     raw_search = "Raw Search" in options
-            #     st.session_state.memoryless = "Enable Memory" not in options
-            #     st.session_state.rating = "Rating Function" in options
-            #     st.session_state.download_response_flag = "Capture Responses" in options
-            #     preview_download_response = "Download Responses" in options
-
-            #     clear = sac.switch(
-            #         label="Clear Chat", value=False, align="start", position="left"
-            #     )
-
-            #     if clear == True:
-            #         clear_session_states()
-            #     if preview_download_response:
-            #         complete_my_lesson()
 
             # chatbot with knowledge base
             if st.session_state.vs:
@@ -893,103 +666,95 @@ def main():
         elif st.session_state.option == "Org Management":
             if st.session_state.user["profile_id"] == SA:
                 st.subheader(f":green[{st.session_state.option}]")
-                # direct_vectorstore_function()
 
-                if check_password(st.session_state.user["username"], SUPER_PWD):
-                    st.write(
-                        "To start creating your teachers account, please change the default password of your administrator account under profile settings"
+                sch_id, msg = process_user_profile(st.session_state.user["profile_id"])
+                create_flag = False
+                rows = has_at_least_two_rows()
+                if rows >= 2:
+                    create_flag = check_multiple_schools()
+                st.markdown("###")
+                st.write(msg)
+                st.markdown("###")
+                steps_options = sac.steps(
+                    items=[
+                        sac.StepsItem(
+                            title="step 1",
+                            description="Create Students and Teachers account of a new school",
+                            disabled=create_flag,
+                        ),
+                        sac.StepsItem(
+                            title="step 2",
+                            description="Remove/Assign Teachers to Classes",
+                        ),
+                        sac.StepsItem(
+                            title="step 3", description="Change Teachers Profile"
+                        ),
+                        sac.StepsItem(
+                            title="step 4",
+                            description="Setting function access for profiles",
+                        ),
+                        sac.StepsItem(
+                            title="step 5",
+                            description="Reassign Students to Classes(Optional)",
+                        ),
+                        sac.StepsItem(
+                            title="step 6",
+                            description="Add/Delete Classes and Levels",
+                        ),
+                        sac.StepsItem(
+                            title="step 7",
+                            description="Managing SQL Schema Tables",
+                            icon="radioactive",
+                        ),
+                    ],
+                    format_func="title",
+                    placement="vertical",
+                    size="small",
+                )
+                if steps_options == "step 1":
+                    if create_flag:
+                        st.write("School created, click on Step 2")
+                    else:
+                        create_org_structure()
+                elif steps_options == "step 2":
+                    remove_or_reassign_teacher_ui(sch_id)
+                elif steps_options == "step 3":
+                    change_teacher_profile_ui(sch_id)
+                elif steps_options == "step 4":
+                    link_users_to_app_function_ui(sch_id)
+                elif steps_options == "step 5":
+                    reassign_student_ui(sch_id)
+                elif steps_options == "step 6":
+                    add_level(sch_id)
+                    st.divider()
+                    add_class(sch_id)
+                    st.divider()
+                    streamlit_delete_interface()
+                elif steps_options == "step 7":
+                    st.subheader(":red[Managing SQL Schema Tables]")
+                    st.warning(
+                        "Please do not use this function unless you know what you are doing"
                     )
-                else:
-                    sch_id, msg = process_user_profile(
-                        st.session_state.user["profile_id"]
-                    )
-                    create_flag = False
-                    rows = has_at_least_two_rows()
-                    if rows >= 2:
-                        create_flag = check_multiple_schools()
-                    st.markdown("###")
-                    st.write(msg)
-                    st.markdown("###")
-                    steps_options = sac.steps(
-                        items=[
-                            sac.StepsItem(
-                                title="step 1",
-                                description="Create Students and Teachers account of a new school",
-                                disabled=create_flag,
-                            ),
-                            sac.StepsItem(
-                                title="step 2",
-                                description="Remove/Assign Teachers to Classes",
-                            ),
-                            sac.StepsItem(
-                                title="step 3", description="Change Teachers Profile"
-                            ),
-                            sac.StepsItem(
-                                title="step 4",
-                                description="Setting function access for profiles",
-                            ),
-                            sac.StepsItem(
-                                title="step 5",
-                                description="Reassign Students to Classes(Optional)",
-                            ),
-                            sac.StepsItem(
-                                title="step 6",
-                                description="Add/Delete Classes and Levels",
-                            ),
-                            sac.StepsItem(
-                                title="step 7",
-                                description="Managing SQL Schema Tables",
-                                icon="radioactive",
-                            ),
-                        ],
-                        format_func="title",
-                        placement="vertical",
-                        size="small",
-                    )
-                    if steps_options == "step 1":
-                        if create_flag:
-                            st.write("School created, click on Step 2")
-                        else:
-                            create_org_structure()
-                    elif steps_options == "step 2":
-                        remove_or_reassign_teacher_ui(sch_id)
-                    elif steps_options == "step 3":
-                        change_teacher_profile_ui(sch_id)
-                    elif steps_options == "step 4":
-                        link_users_to_app_function_ui(sch_id)
-                    elif steps_options == "step 5":
-                        reassign_student_ui(sch_id)
-                    elif steps_options == "step 6":
-                        add_level(sch_id)
-                        st.divider()
-                        add_class(sch_id)
-                        st.divider()
-                        streamlit_delete_interface()
-                    elif steps_options == "step 7":
-                        st.subheader(":red[Managing SQL Schema Tables]")
-                        st.warning(
-                            "Please do not use this function unless you know what you are doing"
+                    if st.checkbox("I know how to manage SQL Tables"):
+                        st.subheader(
+                            ":red[Zip Database - Download and upload a copy of the database]"
                         )
-                        if st.checkbox("I know how to manage SQL Tables"):
+                        download_database()
+                        upload_database()
+                        if check_aws_secrets_exist():
                             st.subheader(
-                                ":red[Zip Database - Download and upload a copy of the database]"
+                                ":red[Upload Database to S3 - Upload a copy of the database to S3]"
                             )
-                            download_database()
-                            upload_database()
-                            if check_aws_secrets_exist():
-                                st.subheader(
-                                    ":red[Upload Database to S3 - Upload a copy of the database to S3]"
-                                )
-                                upload_s3_database()
-                                download_from_s3_and_unzip()
-                            st.subheader(
-                                ":red[Display and Edit Tables - please do so if you have knowledge of the current schema]"
-                            )
-                            manage_tables()
-                            st.subheader(
-                                ":red[Delete Table - Warning please use this function with extreme caution]"
-                            )
-                            delete_tables()
+                            upload_s3_database()
+                            download_from_s3_and_unzip()
+                        st.subheader(
+                            ":red[Display and Edit Tables - please do so if you have knowledge of the current schema]"
+                        )
+                        manage_tables()
+                        st.subheader(
+                            ":red[Delete Table - Warning please use this function with extreme caution]"
+                        )
+                        delete_tables()
             else:
                 st.subheader(
                     f":red[This option is accessible only to super administrators only]"
@@ -1007,7 +772,7 @@ def main():
                 st.subheader(
                     "Acknowledgement on the use of Generative AI with Large Language Models"
                 )
-                initialize_session_state(MENU_FUNCS, True)
+                initialize_session_state(FUNC_DESCRIPTIONS, True)
                 st.write(ACK)
                 if st.session_state.acknowledgement == True:
                     st.success("You have acknowledged the above information")
@@ -1022,7 +787,7 @@ def main():
                         st.warning(
                             "Please acknowledge the above information before you proceed"
                         )
-                        initialize_session_state(MENU_FUNCS, True)
+                        initialize_session_state(FUNC_DESCRIPTIONS, True)
                         st.stop()
                     pass
             with col2:
