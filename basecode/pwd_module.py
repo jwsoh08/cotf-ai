@@ -6,11 +6,11 @@ import configparser
 import os
 import ast
 
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 
 config = configparser.ConfigParser()
 config.read("config.ini")
-DEFAULT_TEXT = config["constants"]["DEFAULT_TEXT"]
+DEFAULT_PROMPT = config["constants"]["DEFAULT_PROMPT"]
 
 # Check application environment => GCC or Streamlit
 ENV = config["constants"]["prototype_env"]
@@ -36,9 +36,7 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
 

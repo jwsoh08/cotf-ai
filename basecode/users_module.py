@@ -6,7 +6,7 @@ import ast
 from basecode.kb_module import load_vectorstore
 
 
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 
 
 class ConfigHandler:
@@ -25,7 +25,7 @@ class ConfigHandler:
 
 
 config_handler = ConfigHandler()
-DEFAULT_TEXT = config_handler.get_config_values("constants", "DEFAULT_TEXT")
+DEFAULT_PROMPT = config_handler.get_config_values("constants", "DEFAULT_PROMPT")
 PROMPT_TEMPLATES_FUNCTIONS = config_handler.get_config_values(
     "menu_lists", "PROMPT_TEMPLATES_FUNCTIONS"
 )
@@ -221,7 +221,7 @@ def save_prompt_templates_for_user(user_id):
                     INSERT INTO Prompt_Templates (prompt_template, prompt_description, user_id)
                     VALUES (?, ?, ?)
                 """,
-                    (function_name, DEFAULT_TEXT, user_id),
+                    (function_name, DEFAULT_PROMPT, user_id),
                 )
 
         conn.commit()
@@ -320,10 +320,10 @@ def update_prompt_template(profile_id, templates):
 
         selected_school_id = None
         if profile_id == SA:
-           
+
             cursor.execute("SELECT school_id, school_name FROM Schools")
             schools = cursor.fetchall()
-            
+
             if not schools:
                 st.error("No schools available")
                 return
@@ -341,7 +341,7 @@ def update_prompt_template(profile_id, templates):
         )
         profiles = cursor.fetchall()
         profile_choices = {profile[1]: profile[0] for profile in profiles}
-        
+
         multiselect_profile_names = st.multiselect(
             "Select Profiles (Excludes SA):", list(profile_choices.keys())
         )
@@ -425,7 +425,7 @@ def load_prompt_templates(user_id):
             session_key = function_name.replace(" ", "_").lower()
             if session_key not in st.session_state:
                 st.session_state[session_key] = existing_templates.get(
-                    function_name, DEFAULT_TEXT
+                    function_name, DEFAULT_PROMPT
                 )
 
         conn.commit()
@@ -448,7 +448,7 @@ def pre_load_variables(user_id):
             session_key = function_name.replace(" ", "_").lower()
             if session_key not in st.session_state:
                 st.session_state[session_key] = existing_templates.get(
-                    function_name, DEFAULT_TEXT
+                    function_name, DEFAULT_PROMPT
                 )
 
         conn.commit()

@@ -7,7 +7,7 @@ import configparser
 import os
 import ast
 
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 
 # Create or check for the 'database' directory in the current working directory
 cwd = os.getcwd()

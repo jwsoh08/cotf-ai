@@ -2,7 +2,7 @@ import sqlite3
 import streamlit as st
 import os
 import configparser
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 
 # clear no error in creating schema
 
@@ -27,11 +27,10 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
+
 
 def create_dbs():
     conn = sqlite3.connect(WORKING_DATABASE)

@@ -4,7 +4,7 @@ import os
 import sqlite3
 import ast
 
-from .services.aws import SecretsManager
+from services.aws import SecretsManager
 
 
 class ConfigHandler:
@@ -23,7 +23,7 @@ class ConfigHandler:
 
 
 config_handler = ConfigHandler()
-DEFAULT_TEXT = config_handler.get_config_values("constants", "DEFAULT_TEXT")
+DEFAULT_PROMPT = config_handler.get_config_values("constants", "DEFAULT_PROMPT")
 PROMPT_TEMPLATES_FUNCTIONS = config_handler.get_config_values(
     "menu_lists", "PROMPT_TEMPLATES_FUNCTIONS"
 )
@@ -50,9 +50,7 @@ if ENV == "GCC":
         WORKING_DATABASE = SecretsManager.get_secret("sql_ext_path")
 else:
     if st.secrets["sql_ext_path"] == "None":
-        WORKING_DATABASE = os.path.join(
-            WORKING_DIRECTORY, st.secrets["default_db"]
-        )
+        WORKING_DATABASE = os.path.join(WORKING_DIRECTORY, st.secrets["default_db"])
     else:
         WORKING_DATABASE = st.secrets["sql_ext_path"]
 
