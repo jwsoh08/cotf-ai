@@ -120,8 +120,3 @@ ACK = """
       """
 
 # Database
-
-if os.environ["ENVIRONMENT"] == "GCC":
-    DEFAULT_DB = SecretsManager.get_secret("default_db")
-else:
-    DEFAULT_DB = st.secrets["default_db"]
