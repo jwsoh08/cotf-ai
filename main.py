@@ -110,10 +110,7 @@ DEFAULT_DB = ""
 
 from services.aws import SecretsManager
 
-if os.environ["ENVIRONMENT"] == "GCC":
-    DEFAULT_DB = SecretsManager.get_secret("default_db")
-else:
-    DEFAULT_DB = st.secrets["default_db"]
+DEFAULT_DB = SecretsManager.get_secret("default_db")
 
 
 def download_nltk_data_if_absent(package_name):
