@@ -106,11 +106,13 @@ from settings import (
     ACK,
 )
 
-DEFAULT_DB = ""
 
 from services.aws import SecretsManager
 
 DEFAULT_DB = SecretsManager.get_secret("default_db")
+
+print(os.environ.get("PROTOTYPE"))
+print(os.environ.get("ENVIRONMENT"))
 
 
 def download_nltk_data_if_absent(package_name):
@@ -138,9 +140,6 @@ def return_function_name(function_name, default_name=""):
         return "-"
     else:
         if default_name == "":
-            if os.environ["PROTOTYPE"] == "LCC" and function_name == "AI Chatbot":
-                return "Lesson Resource Generator"
-
             return function_name
 
         else:
