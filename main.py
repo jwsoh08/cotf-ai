@@ -104,8 +104,9 @@ from settings import (
     REFLECTIVE,
     METACOG,
     ACK,
-    DEFAULT_DB,
 )
+
+DEFAULT_DB = ""
 
 from services.aws import SecretsManager
 
