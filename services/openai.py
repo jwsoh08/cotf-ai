@@ -15,17 +15,7 @@ class OpenAIBase:
     """
 
     def __init__(self):
-        if os.environ["PROTOTYPE"] == "LCC":
-            if os.environ["ENVIRONMENT"] == "GCC":
-                self.api_key = SecretsManager.get_secret("openai_key_lcc")
-            else:
-                self.api_key = st.secrets["openai_key_lcc"]
-
-        elif os.environ["PROTOTYPE"] == "METACOG":
-            if os.environ["ENVIRONMENT"] == "GCC":
-                self.api_key = SecretsManager.get_secret("openai_key_metacog")
-            else:
-                self.api_key = st.secrets["openai_key_metacog"]
+        self.api_key = SecretsManager.get_secret("openai_key_lcc")
 
 
 class ChatGPT(OpenAIBase):
