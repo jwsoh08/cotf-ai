@@ -174,7 +174,7 @@ def fetch_data_by_school(sch_id):
     return data_rows, data_column_names
 
 
-def fetch_conversations_with_chatbot(sch_id, class_id=None):
+def fetch_conversations_with_chatbot(sch_id, user_id, class_id=None):
     conn = sqlite3.connect(WORKING_DATABASE)
     cursor = conn.cursor()
 
@@ -189,11 +189,12 @@ def fetch_conversations_with_chatbot(sch_id, class_id=None):
                     Data_Table.chatbot_ans
                 FROM Data_Table
                 JOIN Users ON Data_Table.user_id = Users.user_id
-                WHERE Users.class_id = ? AND Users.school_id = ?
+                WHERE Users.class_id = ? AND Users.school_id = ? AND Users.user_id = ?
             """,
             (
                 class_id,
                 sch_id,
+                user_id,
             ),
         )
 
@@ -255,7 +256,7 @@ def download_data_table_csv(user_id, sch_id, profile):
 
     elif profile == TCH:
         class_id = get_class_id_from_user(user_id)
-        data, columns = fetch_conversations_with_chatbot(sch_id, class_id)
+        data, columns = fetch_conversations_with_chatbot(sch_id, user_id, class_id)
 
     else:
         data, columns = fetch_data_by_username(user_id)
