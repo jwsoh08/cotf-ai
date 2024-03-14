@@ -122,28 +122,6 @@ def diagnose_issue(sch_id):
         return f"Data entries found for the users: {data_ids}"
 
 
-def fetch_data_by_school(sch_id):
-    # Connect to the specified database
-    conn = sqlite3.connect(WORKING_DATABASE)
-    cursor = conn.cursor()
-    # Fetch data from Data_Table for all users of the given school using JOIN
-    cursor.execute(
-        """
-            SELECT Users.username, Data_Table.* 
-            FROM Data_Table
-            JOIN Users ON Data_Table.user_id = Users.user_id
-            WHERE Users.school_id=?
-        """,
-        (sch_id,),
-    )
-
-    data_rows = cursor.fetchall()
-    data_column_names = [description[0] for description in cursor.description]
-    conn.close()
-
-    return data_rows, data_column_names
-
-
 def fetch_data_by_sa(sch_id):
     # Connect to the specified database
     conn = sqlite3.connect(WORKING_DATABASE)
@@ -151,7 +129,11 @@ def fetch_data_by_sa(sch_id):
     # Fetch data from Data_Table for all users of the given school using JOIN
     cursor.execute(
         """
-            SELECT Users.username, Data_Table.* 
+            SELECT Users.username, 
+                Data_Table.date,
+                Data_Table.function_name,
+                Data_Table.user_prompt,
+                Data_Table.chatbot_ans
             FROM Data_Table
             JOIN Users ON Data_Table.user_id = Users.user_id
             WHERE Users.school_id=? OR Users.school_id IS NULL
@@ -173,7 +155,11 @@ def fetch_data_by_school(sch_id):
     # Fetch data from Data_Table for all users of the given school using JOIN
     cursor.execute(
         """
-            SELECT Users.username, Data_Table.* 
+            SELECT Users.username, 
+                Data_Table.date,
+                Data_Table.function_name,
+                Data_Table.user_prompt,
+                Data_Table.chatbot_ans
             FROM Data_Table
             JOIN Users ON Data_Table.user_id = Users.user_id
             WHERE Users.school_id=?
@@ -215,7 +201,11 @@ def fetch_conversations_with_chatbot(sch_id, class_id=None):
         # fetch all students's conversation
         cursor.execute(
             """
-                SELECT Users.username, Data_Table.* 
+                SELECT Users.username, 
+                    Data_Table.date,
+                    Data_Table.function_name,
+                    Data_Table.user_prompt,
+                    Data_Table.chatbot_ans
                 FROM Data_Table
                 JOIN Users ON Data_Table.user_id = Users.user_id
                 WHERE Users.school_id=?
