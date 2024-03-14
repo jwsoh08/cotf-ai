@@ -209,9 +209,12 @@ def fetch_conversations_with_chatbot(sch_id, user_id, class_id=None):
                     Data_Table.chatbot_ans
                 FROM Data_Table
                 JOIN Users ON Data_Table.user_id = Users.user_id
-                WHERE Users.school_id=?
+                WHERE Users.school_id=? AND Users.user_id = ?
             """,
-            (sch_id,),
+            (
+                sch_id,
+                user_id,
+            ),
         )
 
     data = cursor.fetchall()
