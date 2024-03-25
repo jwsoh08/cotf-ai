@@ -108,11 +108,17 @@ from settings import (
 
 
 from services.aws import SecretsManager
+import configparser
 
-DEFAULT_DB = SecretsManager.get_secret("default_db")
+config = configparser.ConfigParser()
+config.read("config.ini")
 
-print(os.environ.get("PROTOTYPE"))
-print(os.environ.get("ENVIRONMENT"))
+ENV = config["constants"]["prototype_env"]
+
+if ENV == "GCC":
+    DEFAULT_DB = SecretsManager.get_secret("default_db")
+else:
+    DEFAULT_DB = st.secrets["default_db"]
 
 
 def download_nltk_data_if_absent(package_name):

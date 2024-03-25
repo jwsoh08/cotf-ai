@@ -2,6 +2,14 @@ import os
 import streamlit as st
 
 from services.aws import SecretsManager
+import configparser
+
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+ENV = config["constants"]["prototype_env"]
+
+
 from settings import FUNC_DESCRIPTIONS
 
 
@@ -25,7 +33,10 @@ def initialise_session_state():
         st.session_state.start = 0
 
     if "openai_model" not in st.session_state:
-        st.session_state.openai_model = SecretsManager.get_secret("default_model")
+        if ENV == "GCC":
+            st.session_state.openai_model = SecretsManager.get_secret("default_model")
+        else:
+            st.session_state.openai_model = st.secrets["default_model"]
 
     if "msg" not in st.session_state:
         st.session_state.msg = []
@@ -37,23 +48,37 @@ def initialise_session_state():
         st.session_state.lesson_plan = ""
 
     if "temp" not in st.session_state:
-        st.session_state.temp = int(SecretsManager.get_secret("default_temp"))
+        if ENV == "GCC":
+            st.session_state.temp = int(SecretsManager.get_secret("default_temp"))
+        else:
+            st.session_state.temp = st.secrets["default_temp"]
 
     if "acknowledgement" not in st.session_state:
         st.session_state.acknowledgement = False
 
     if "frequency_penalty" not in st.session_state:
-        st.session_state.frequency_penalty = int(
-            SecretsManager.get_secret("default_frequency_penalty")
-        )
+        if ENV == "GCC":
+            st.session_state.frequency_penalty = int(
+                SecretsManager.get_secret("default_frequency_penalty")
+            )
+        else:
+            st.session_state.frequency_penalty = st.secrets["default_frequency_penalty"]
 
     if "presence_penalty" not in st.session_state:
-        st.session_state.presence_penalty = int(
-            SecretsManager.get_secret("default_presence_penalty")
-        )
+        if ENV == "GCC":
+            st.session_state.presence_penalty = int(
+                SecretsManager.get_secret("default_presence_penalty")
+            )
+        else:
+            st.session_state.presence_penalty = st.secrets["default_presence_penalty"]
 
     if "k_memory" not in st.session_state:
-        st.session_state.k_memory = int(SecretsManager.get_secret("default_k_memory"))
+        if ENV == "GCC":
+            st.session_state.k_memory = int(
+                SecretsManager.get_secret("default_k_memory")
+            )
+        else:
+            st.session_state.k_memory = st.secrets["default_k_memory"]
 
     if "memoryless" not in st.session_state:
         st.session_state.memoryless = False
