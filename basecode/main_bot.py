@@ -233,7 +233,12 @@ def memory_buffer_qa_component(prompt):
     selected_prompt = st.session_state.chatbot
 
     if st.session_state.option == "Lesson Collaborator (Chatbot)":
-        selected_prompt = st.session_state.lesson_collaborator
+
+        if st.session_state.chatbot == st.session_state.commentator_mode:
+            selected_prompt = st.session_state.lesson_commentator
+
+        elif st.session_state.chatbot == st.session_state.collaborator_mode:
+            selected_prompt = st.session_state.lesson_collaborator
 
     if st.session_state.option == "Lesson Collaborator (Scaffolded)":
         selected_prompt = st.session_state.lesson_collaborator
