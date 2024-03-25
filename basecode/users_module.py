@@ -31,6 +31,7 @@ PROMPT_TEMPLATES_FUNCTIONS = config_handler.get_config_values(
 )
 SA = config_handler.get_config_values("constants", "SA")
 AD = config_handler.get_config_values("constants", "AD")
+TCH = config_handler.get_config_values("constants", "TCH")
 
 # Create or check for the 'database' directory in the current working directory
 cwd = os.getcwd()
@@ -726,14 +727,21 @@ def load_available_shared_owned_vector_stores(user_id):
 
         # If profile_id is AD, return all vector stores from the same organization
         elif profile_id == AD:
+            """
+            SELECT vs.vs_id, vs.vectorstore_name
+            FROM Vector_Stores vs
+            INNER JOIN Profile_VectorStores pvs ON vs.vs_id = pvs.vs_id
+            WHERE vs.sharing_enabled = 1 AND pvs.profile_id = ?
+            """
+
             cursor.execute(
                 """
-                SELECT vs.vs_id, vs.vectorstore_name 
-                FROM Vector_Stores vs
-                INNER JOIN Profile_VectorStores pvs ON vs.vs_id = pvs.vs_id
-                WHERE vs.sharing_enabled = 1 AND pvs.profile_id = ?
+                SELECT vs.vs_id, vs.vectorstore_name
+                FROM Users u
+                INNER JOIN Vector_Stores vs ON vs.user_id = u.user_id
+                WHERE u.org_id = ?;
             """,
-                (profile_id,),
+                (org_id,),
             )
             accessible_vectorstores.extend(
                 [
